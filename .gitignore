@@ -1,0 +1,23 @@
+# Dependencias (se reinstalan con npm install)
+node_modules/
+
+# Secretos: NUNCA al repositorio
+.env
+.env.local
+appsettings.Development.json
+
+# Builds de React (se regeneran)
+dist/
+build/
+
+# Builds de .NET (se regeneran)
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Sistema operativo / editor
+.DS_Store
+.vscode/
