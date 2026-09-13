@@ -2,16 +2,12 @@ using Aplicacion.Abstracciones;
 using Aplicacion.Inyecciones;
 using Infraestructura.Data;
 using Microsoft.EntityFrameworkCore;
-using Presentacion.Components;
-using Presentacion.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ============================================
-// SERVICIOS DE BLAZOR SERVER
+// SERVICIOS
 // ============================================
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
 
 // Registrar DbContext con SQL Server
 builder.Services.AddDbContext<ContextoECE>(options =>
@@ -22,9 +18,6 @@ builder.Services.AddScoped<IUnitOfWork, Infraestructura.UnitOfWork.UnitOfWork>()
 
 // Registrar servicios de la capa de Aplicación
 builder.Services.AgregarAplicacion();
-
-// Toastr
-builder.Services.AddScoped<IToastrService, ToastrService>();
 
 // ============================================
 // SERVICIOS DE API REST
@@ -66,7 +59,6 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
@@ -81,19 +73,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
-// Habilitar CORS (debe ir ANTES de UseAntiforgery y MapControllers)
+// Habilitar CORS (debe ir antes de MapControllers)
 app.UseCors("PermitirTodo");
-
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-
-// Endpoints de Blazor Server
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
 
 // Endpoints de API REST
 app.MapControllers();
