@@ -1,0 +1,95 @@
+﻿@page "/especialidades"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white rounded-top-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-stethoscope me-2"></i>Listado de Especialidades
+                </h4>
+                <button class="btn btn-success" @onclick="NavegarACrear">
+                    <i class="fas fa-plus-circle me-1"></i> Nueva Especialidad
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-3 bg-primary-subtle">
+
+            @if (especialidades == null)
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-pulse fa-2x text-primary"></i>
+                    <p class="mt-2">Cargando especialidades...</p>
+                </div>
+            }
+            else if (!especialidades.Any())
+            {
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i> No hay especialidades registradas.
+                    <a href="#" @onclick:preventDefault="true" @onclick="NavegarACrear">Crear la primera</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive bg-white rounded-3 p-2">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Doctores</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var esp in especialidades)
+                            {
+                                <tr>
+                                    <td><strong>@esp.Nombre</strong></td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(esp.Descripcion))
+                                        {
+                                            <span class="text-muted fst-italic">Sin descripción</span>
+                                        }
+                                        else
+                                        {
+                                            @(esp.Descripcion!.Length > 100 ? esp.Descripcion.Substring(0, 100) + "..." : esp.Descripcion)
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info">@esp.CantidadDoctores</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (esp.Activo)
+                                        {
+                                            <span class="badge bg-success">Activo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Inactivo</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-info me-1" title="Ver detalles"
+                                                @onclick="() => VerDetalles(esp.Id)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning me-1" title="Editar"
+                                                @onclick="() => Editar(esp.Id)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" title="Eliminar"
+                                                @onclick="() => ConfirmarEliminar(esp.Id, esp.Nombre, esp.CantidadDoctores)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

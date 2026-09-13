@@ -1,0 +1,137 @@
+﻿@page "/editar-paciente/{id:int}"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Editar Paciente: @pacienteOriginal?.Nombres @pacienteOriginal?.Apellidos
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (pacienteOriginal == null)
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-spinner fa-pulse me-2"></i>Cargando datos del paciente...
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@pacienteEditar" OnValidSubmit="@GrabarPaciente" FormName="formEditarPaciente">
+                            <FluentValidator />
+
+                            @* ====== Campos de solo lectura (NO editables) ====== *@
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-id-card me-1"></i> Número Documento
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light">@pacienteOriginal.NumeroDocumento</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-tag me-1"></i> Tipo Documento
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(pacienteOriginal.TipoDocumento)</p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-calendar-alt me-1"></i> Fecha Nacimiento
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light">@pacienteOriginal.FechaNacimiento.ToString("dd/MM/yyyy")</p>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-venus-mars me-1"></i> Género
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(pacienteOriginal.Genero)</p>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-tint me-1"></i> Grupo Sanguíneo
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(pacienteOriginal.GrupoSanguineo)</p>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3 bg-warning-subtle p-2">
+                                <i class="fas fa-edit me-2"></i>Datos editables
+                            </h5>
+                            <hr class="my-3 text-warning" />
+
+                            @* ====== Campos editables ====== *@
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombres" class="form-label fw-semibold">
+                                        <i class="fas fa-user me-1"></i> Nombres
+                                    </label>
+                                    <InputText id="nombres" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: Juan Carlos"
+                                               @bind-Value="pacienteEditar.Nombres" />
+                                    <ValidationMessage For="@(() => pacienteEditar.Nombres)" class="text-danger small" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="apellidos" class="form-label fw-semibold">
+                                        <i class="fas fa-user me-1"></i> Apellidos
+                                    </label>
+                                    <InputText id="apellidos" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: Pérez Gómez"
+                                               @bind-Value="pacienteEditar.Apellidos" />
+                                    <ValidationMessage For="@(() => pacienteEditar.Apellidos)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="telefono" class="form-label fw-semibold">
+                                        <i class="fas fa-phone me-1"></i> Teléfono
+                                    </label>
+                                    <InputText id="telefono" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: 8095551234"
+                                               @bind-Value="pacienteEditar.Telefono" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label fw-semibold">
+                                        <i class="fas fa-envelope me-1"></i> Email
+                                    </label>
+                                    <InputText id="email" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: juan@example.com"
+                                               @bind-Value="pacienteEditar.Email" />
+                                    <ValidationMessage For="@(() => pacienteEditar.Email)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="direccion" class="form-label fw-semibold">
+                                        <i class="fas fa-map-marker-alt me-1"></i> Dirección
+                                    </label>
+                                    <InputText id="direccion" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: Av. Siempre Viva 123"
+                                               @bind-Value="pacienteEditar.Direccion" />
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-secondary px-4" @onclick="Cancelar">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-save me-1"></i> Actualizar Paciente
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

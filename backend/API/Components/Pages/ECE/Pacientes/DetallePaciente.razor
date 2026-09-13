@@ -1,0 +1,124 @@
+﻿@page "/detalles-paciente/{id:int}"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-info text-white text-center rounded-top-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>Detalles del Paciente
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (paciente == null)
+                    {
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Cargando información...
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-user me-1"></i> Nombres
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@paciente.Nombres</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-user me-1"></i> Apellidos
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@paciente.Apellidos</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-calendar-alt me-1"></i> F. Nacimiento
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@paciente.FechaNacimiento.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-venus-mars me-1"></i> Género
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(paciente.Genero)</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-id-card me-1"></i> No. Documento
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@paciente.NumeroDocumento</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-tag me-1"></i> Tipo Documento
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(paciente.TipoDocumento)</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-phone me-1"></i> Teléfono
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@(string.IsNullOrEmpty(paciente.Telefono) ? "—" : paciente.Telefono)</p>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-envelope me-1"></i> Email
+                                </label>
+                                <p class="form-control-plaintext">@(string.IsNullOrEmpty(paciente.Email) ? "—" : paciente.Email)</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-tint me-1"></i> Grupo Sanguíneo
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@EnumHelper.ObtenerNombreEnum(paciente.GrupoSanguineo)</p>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Dirección
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">@(string.IsNullOrEmpty(paciente.Direccion) ? "—" : paciente.Direccion)</p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    Estado
+                                </label>
+                                <p class="form-control-plaintext fw-bold bg-light">
+                                    @if (paciente.Activo)
+                                    {
+                                        <i class="fas fa-check-circle text-success fs-5 me-1"></i>
+                                        <span class="text-success">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times-circle text-danger fs-5 me-1"></i>
+                                        <span class="text-danger">Inactivo</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary px-4" @onclick="Volver">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+                            </button>
+                            <button type="button" class="btn btn-primary px-4" @onclick="Editar">
+                                <i class="fas fa-edit me-1"></i> Editar paciente
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

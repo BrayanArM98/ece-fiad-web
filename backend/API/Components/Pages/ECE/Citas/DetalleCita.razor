@@ -1,0 +1,154 @@
+﻿@page "/detalles-cita/{id:int}"
+@rendermode InteractiveServer
+@using Dominio.Enumeraciones
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-info text-white text-center rounded-top-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Detalles de la Cita
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (cargando)
+                    {
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando información...</p>
+                        </div>
+                    }
+                    else if (cita != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-user me-1"></i> Paciente
+                                </label>
+                                <div class="form-control bg-light">
+                                    <strong>@cita.NombrePaciente</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-user-md me-1"></i> Doctor
+                                </label>
+                                <div class="form-control bg-light">
+                                    <strong>@cita.NombreDoctor</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-calendar me-1"></i> Fecha y Hora
+                                </label>
+                                <div class="form-control bg-light">
+                                    @cita.FechaHora.ToString("dd/MM/yyyy HH:mm") hrs
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold text-muted">
+                                    <i class="fas fa-flag me-1"></i> Estado
+                                </label>
+                                <div class="form-control bg-light">
+                                    <span class="badge @ObtenerColorEstado(cita.Estado)">
+                                        @ObtenerTextoEstado(cita.Estado)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted">
+                                <i class="fas fa-notes-medical me-1"></i> Motivo
+                            </label>
+                            <div class="form-control bg-light" style="min-height: 60px;">
+                                @if (string.IsNullOrEmpty(cita.Motivo))
+                                {
+                                    <span class="text-muted fst-italic">Sin motivo registrado</span>
+                                }
+                                else
+                                {
+                                    @cita.Motivo
+                                }
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted">
+                                <i class="fas fa-sticky-note me-1"></i> Notas
+                            </label>
+                            <div class="form-control bg-light" style="min-height: 80px;">
+                                @if (string.IsNullOrEmpty(cita.Notas))
+                                {
+                                    <span class="text-muted fst-italic">Sin notas adicionales</span>
+                                }
+                                else
+                                {
+                                    @cita.Notas
+                                }
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h6 class="text-muted mb-3">
+                            <i class="fas fa-history me-1"></i> Información de auditoría
+                        </h6>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-semibold text-muted small">Fecha de creación</label>
+                                <div class="form-control bg-light small">
+                                    @cita.FechaDeCreacion.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-semibold text-muted small">Última modificación</label>
+                                <div class="form-control bg-light small">
+                                    @if (cita.FechaDeModificacion.HasValue)
+                                    {
+                                        @cita.FechaDeModificacion.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic">Sin modificaciones</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label fw-semibold text-muted small">Fecha de eliminación</label>
+                                <div class="form-control bg-light small">
+                                    @if (cita.FechaDeEliminacion.HasValue)
+                                    {
+                                        @cita.FechaDeEliminacion.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic">No aplica</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button class="btn btn-secondary" @onclick="Volver">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+                            </button>
+                            <button class="btn btn-primary" @onclick="Editar">
+                                <i class="fas fa-edit me-1"></i> Editar cita
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

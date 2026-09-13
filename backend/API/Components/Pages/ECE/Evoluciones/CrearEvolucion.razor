@@ -1,0 +1,132 @@
+﻿@page "/crear-evolucion"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>Registro de Nueva Evolución
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (cargando)
+                    {
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando datos del formulario...</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@evolucionDto" OnValidSubmit="@GrabarEvolucion" FormName="formCrearEvolucion">
+                            <FluentValidator />
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="historia" class="form-label fw-semibold">
+                                        <i class="fas fa-notes-medical me-1"></i> Historia Clínica
+                                    </label>
+                                    <InputSelect id="historia" class="form-select"
+                                                 @bind-Value="evolucionDto.IdHistoriaClinica">
+                                        <option value="0">-- Selecciona una historia clínica --</option>
+                                        @foreach (var h in historias!)
+                                        {
+                                            <option value="@h.Id">@h.NombrePaciente</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => evolucionDto.IdHistoriaClinica)" class="text-danger small" />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="doctor" class="form-label fw-semibold">
+                                        <i class="fas fa-user-md me-1"></i> Doctor
+                                    </label>
+                                    <InputSelect id="doctor" class="form-select"
+                                                 @bind-Value="evolucionDto.IdDoctor">
+                                        <option value="0">-- Selecciona un doctor --</option>
+                                        @foreach (var d in doctores!)
+                                        {
+                                            <option value="@d.Id">@d.NombreCompleto (@d.NombreEspecialidad)</option>
+                                        }
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => evolucionDto.IdDoctor)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-day me-1"></i> Fecha
+                                </label>
+                                <InputDate id="fecha" class="form-control"
+                                           @bind-Value="evolucionDto.Fecha" />
+                                <ValidationMessage For="@(() => evolucionDto.Fecha)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="diagnostico" class="form-label fw-semibold">
+                                    <i class="fas fa-stethoscope me-1"></i> Diagnóstico
+                                </label>
+                                <InputTextArea id="diagnostico" class="form-control" rows="3"
+                                               placeholder="Ej: Faringitis aguda con fiebre persistente..."
+                                               @bind-Value="evolucionDto.Diagnostico" />
+                                <small class="text-muted">
+                                    @(evolucionDto.Diagnostico?.Length ?? 0) / 500 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionDto.Diagnostico)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tratamiento" class="form-label fw-semibold">
+                                    <i class="fas fa-prescription-bottle-alt me-1"></i> Tratamiento
+                                </label>
+                                <InputTextArea id="tratamiento" class="form-control" rows="3"
+                                               placeholder="Ej: Amoxicilina 500mg cada 8 horas por 7 días..."
+                                               @bind-Value="evolucionDto.Tratamiento" />
+                                <small class="text-muted">
+                                    @(evolucionDto.Tratamiento?.Length ?? 0) / 500 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionDto.Tratamiento)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notas" class="form-label fw-semibold">
+                                    <i class="fas fa-sticky-note me-1"></i> Notas <span class="text-muted">(opcional)</span>
+                                </label>
+                                <InputTextArea id="notas" class="form-control" rows="3"
+                                               placeholder="Observaciones adicionales sobre la evolución del paciente..."
+                                               @bind-Value="evolucionDto.Notas" />
+                                <small class="text-muted">
+                                    @(evolucionDto.Notas?.Length ?? 0) / 1000 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionDto.Notas)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="activo" class="form-check-input"
+                                               @bind-Value="evolucionDto.Activo" />
+                                <label for="activo" class="form-check-label fw-semibold">
+                                    Evolución activa
+                                </label>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-secondary px-4" @onclick="Cancelar">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-success px-4">
+                                    <i class="fas fa-save me-1"></i> Guardar Evolución
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

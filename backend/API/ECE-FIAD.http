@@ -1,0 +1,332 @@
+@host = https://localhost:7241
+@contentType = application/json
+
+### ============================================
+### MÓDULO: PACIENTES
+### ============================================
+
+### Obtener todos los pacientes
+GET {{host}}/api/pacientes
+Accept: {{contentType}}
+
+### Obtener pacientes activos (para selects)
+GET {{host}}/api/pacientes/activos
+Accept: {{contentType}}
+
+### Obtener pacientes sin historia clínica
+GET {{host}}/api/pacientes/sin-historia
+Accept: {{contentType}}
+
+### Obtener un paciente por ID
+GET {{host}}/api/pacientes/1
+Accept: {{contentType}}
+
+### Verificar si existe paciente por identificación
+GET {{host}}/api/pacientes/existe/81750937
+Accept: {{contentType}}
+
+### Crear un nuevo paciente
+POST {{host}}/api/pacientes
+Content-Type: {{contentType}}
+
+{
+  "nombres": "Carlos Alberto",
+  "apellidos": "Mendoza Ruiz",
+  "numeroDocumento": "99887766",
+  "tipoDocumento": "Cedula",
+  "telefono": "5551234567",
+  "email": "carlos.mendoza@gmail.com",
+  "fechaNacimiento": "1990-03-15T00:00:00",
+  "genero": "Masculino",
+  "grupoSanguineo": "OPositivo",
+  "direccion": "Calle Falsa 123"
+}
+
+### Actualizar un paciente
+PUT {{host}}/api/pacientes/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "nombres": "Maria Jose",
+  "apellidos": "Pérez Torres",
+  "telefono": "5561545463",
+  "email": "maria.jose88@gmail.com",
+  "direccion": "Av Reforma 58 (actualizada)"
+}
+
+### Eliminar un paciente (borrado lógico)
+DELETE {{host}}/api/pacientes/99
+Accept: {{contentType}}
+
+
+### ============================================
+### MÓDULO: ESPECIALIDADES
+### ============================================
+
+### Obtener todas las especialidades
+GET {{host}}/api/especialidades
+Accept: {{contentType}}
+
+### Obtener una especialidad por ID
+GET {{host}}/api/especialidades/1
+Accept: {{contentType}}
+
+### Verificar si existe especialidad por nombre
+GET {{host}}/api/especialidades/existe/Cardiología
+Accept: {{contentType}}
+
+### Crear una nueva especialidad
+POST {{host}}/api/especialidades
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Dermatología",
+  "descripcion": "Diagnóstico y tratamiento de enfermedades de la piel."
+}
+
+### Actualizar una especialidad
+PUT {{host}}/api/especialidades/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "nombre": "Cardiología",
+  "descripcion": "Especialidad del corazón y sistema cardiovascular (actualizada)."
+}
+
+### Eliminar una especialidad
+DELETE {{host}}/api/especialidades/99
+Accept: {{contentType}}
+
+
+### ============================================
+### MÓDULO: DOCTORES
+### ============================================
+
+### Obtener todos los doctores
+GET {{host}}/api/doctores
+Accept: {{contentType}}
+
+### Obtener un doctor por ID
+GET {{host}}/api/doctores/1
+Accept: {{contentType}}
+
+### Verificar si existe doctor por email
+GET {{host}}/api/doctores/existe-email/laura.jimenez@gmail.com
+Accept: {{contentType}}
+
+### Crear un nuevo doctor
+POST {{host}}/api/doctores
+Content-Type: {{contentType}}
+
+{
+  "nombres": "Roberto",
+  "apellidos": "Sánchez López",
+  "telefono": "5559876543",
+  "email": "roberto.sanchez@clinica.com",
+  "horarioAtencion": "Lunes a Viernes 8:00 - 14:00",
+  "idEspecialidad": 1
+}
+
+### Actualizar un doctor
+PUT {{host}}/api/doctores/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "nombres": "Laura",
+  "apellidos": "Jiménez",
+  "telefono": "5550001111",
+  "email": "laura.jimenez@gmail.com",
+  "horarioAtencion": "Lunes a Viernes 9:00 - 15:00",
+  "idEspecialidad": 1
+}
+
+### Eliminar un doctor
+DELETE {{host}}/api/doctores/99
+Accept: {{contentType}}
+
+
+### ============================================
+### MÓDULO: CITAS
+### ============================================
+
+### Obtener todas las citas
+GET {{host}}/api/citas
+Accept: {{contentType}}
+
+### Obtener una cita por ID
+GET {{host}}/api/citas/1
+Accept: {{contentType}}
+
+### Crear una nueva cita
+POST {{host}}/api/citas
+Content-Type: {{contentType}}
+
+{
+  "idPaciente": 1,
+  "idDoctor": 2,
+  "fechaHora": "2026-12-20T10:00:00",
+  "motivo": "Consulta de control general",
+  "notas": "Paciente refiere malestar leve",
+  "estado": "Pendiente"
+}
+
+### Crear una cita DUPLICADA (prueba regla 21 - debe devolver 409)
+POST {{host}}/api/citas
+Content-Type: {{contentType}}
+
+{
+  "idPaciente": 1,
+  "idDoctor": 2,
+  "fechaHora": "2026-12-20T10:00:00",
+  "motivo": "Otra cita en el mismo horario",
+  "notas": "",
+  "estado": "Pendiente"
+}
+
+### Actualizar una cita
+PUT {{host}}/api/citas/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "idPaciente": 1,
+  "idDoctor": 2,
+  "fechaHora": "2026-12-21T11:00:00",
+  "motivo": "Consulta de control general (reagendada)",
+  "notas": "Reagendada por solicitud del paciente",
+  "estado": "Confirmada"
+}
+
+### Cancelar una cita (cambia estado a Cancelada)
+PATCH {{host}}/api/citas/1/cancelar
+Accept: {{contentType}}
+
+### Eliminar una cita
+DELETE {{host}}/api/citas/99
+Accept: {{contentType}}
+
+
+### ============================================
+### MÓDULO: HISTORIAS CLÍNICAS
+### ============================================
+
+### Obtener todas las historias clínicas
+GET {{host}}/api/historias
+Accept: {{contentType}}
+
+### Obtener una historia por ID
+GET {{host}}/api/historias/1
+Accept: {{contentType}}
+
+### Verificar si un paciente ya tiene historia
+GET {{host}}/api/historias/existe-paciente/1
+Accept: {{contentType}}
+
+### Crear una nueva historia clínica
+POST {{host}}/api/historias
+Content-Type: {{contentType}}
+
+{
+  "idPaciente": 2,
+  "fechaApertura": "2026-05-26T00:00:00",
+  "alergias": "Penicilina",
+  "antecedentesFamiliares": "Diabetes tipo 2 (madre)",
+  "antecedentesPersonales": "Ninguno relevante",
+  "activo": true
+}
+
+### Crear historia DUPLICADA (prueba regla 22 - debe devolver 409)
+POST {{host}}/api/historias
+Content-Type: {{contentType}}
+
+{
+  "idPaciente": 1,
+  "fechaApertura": "2026-05-26T00:00:00",
+  "alergias": "",
+  "antecedentesFamiliares": "",
+  "antecedentesPersonales": "",
+  "activo": true
+}
+
+### Actualizar una historia clínica
+PUT {{host}}/api/historias/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "idPaciente": 1,
+  "fechaApertura": "2026-05-11T00:00:00",
+  "alergias": "Mariscos, polvo",
+  "antecedentesFamiliares": "Hipertensión por parte del padre",
+  "antecedentesPersonales": "Ninguna",
+  "activo": true
+}
+
+### Eliminar una historia clínica
+DELETE {{host}}/api/historias/99
+Accept: {{contentType}}
+
+
+### ============================================
+### MÓDULO: EVOLUCIONES
+### ============================================
+
+### Obtener todas las evoluciones
+GET {{host}}/api/evoluciones
+Accept: {{contentType}}
+
+### Obtener una evolución por ID
+GET {{host}}/api/evoluciones/1
+Accept: {{contentType}}
+
+### Obtener evoluciones de una historia clínica
+GET {{host}}/api/evoluciones/historia/1
+Accept: {{contentType}}
+
+### Contar evoluciones de un paciente
+GET {{host}}/api/evoluciones/paciente/1/contar
+Accept: {{contentType}}
+
+### ENDPOINT ESTRELLA: Historial completo del paciente
+GET {{host}}/api/historial/paciente/1
+Accept: {{contentType}}
+
+### Historial de paciente SIN historia (debe devolver tieneHistoria: false)
+GET {{host}}/api/historial/paciente/999
+Accept: {{contentType}}
+
+### Crear una nueva evolución
+POST {{host}}/api/evoluciones
+Content-Type: {{contentType}}
+
+{
+  "idHistoriaClinica": 1,
+  "idDoctor": 3,
+  "fecha": "2026-05-26T09:00:00",
+  "diagnostico": "Faringitis aguda",
+  "tratamiento": "Amoxicilina 500mg cada 8 horas por 7 días",
+  "notas": "Reposo recomendado",
+  "activo": true
+}
+
+### Actualizar una evolución
+PUT {{host}}/api/evoluciones/1
+Content-Type: {{contentType}}
+
+{
+  "id": 1,
+  "idHistoriaClinica": 1,
+  "idDoctor": 3,
+  "fecha": "2026-05-12T00:00:00",
+  "diagnostico": "Fiebre intensa con faringitis (actualizado)",
+  "tratamiento": "Amoxilina 500mg cada 8 horas por 7 días",
+  "notas": "Seguimiento en una semana",
+  "activo": true
+}
+
+### Eliminar una evolución
+DELETE {{host}}/api/evoluciones/99
+Accept: {{contentType}}

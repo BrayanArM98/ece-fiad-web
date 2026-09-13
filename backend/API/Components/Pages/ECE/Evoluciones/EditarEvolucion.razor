@@ -1,0 +1,130 @@
+﻿@page "/editar-evolucion/{Id:int}"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-warning bg-gradient text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Editar Evolución
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (cargando)
+                    {
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando datos de la evolución...</p>
+                        </div>
+                    }
+                    else if (evolucionEditar == null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No se encontró la evolución solicitada.
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-secondary" @onclick="Cancelar">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@evolucionEditar" OnValidSubmit="@GrabarEvolucion" FormName="formEditarEvolucion">
+                            <FluentValidator />
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="paciente" class="form-label fw-semibold">
+                                        <i class="fas fa-user me-1"></i> Paciente
+                                    </label>
+                                    <input type="text" id="paciente" class="form-control" readonly
+                                           value="@nombrePaciente" />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="doctor" class="form-label fw-semibold">
+                                        <i class="fas fa-user-md me-1"></i> Doctor
+                                    </label>
+                                    <input type="text" id="doctor" class="form-control" readonly
+                                           value="@nombreDoctor" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fecha" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-day me-1"></i> Fecha
+                                </label>
+                                <input type="text" id="fecha" class="form-control" readonly
+                                       value="@evolucionEditar.Fecha.ToString("dd/MM/yyyy")" />
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    El paciente, doctor y fecha no se pueden modificar al editar.
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="diagnostico" class="form-label fw-semibold">
+                                    <i class="fas fa-stethoscope me-1"></i> Diagnóstico
+                                </label>
+                                <InputTextArea id="diagnostico" class="form-control" rows="3"
+                                               @bind-Value="evolucionEditar.Diagnostico" />
+                                <small class="text-muted">
+                                    @(evolucionEditar.Diagnostico?.Length ?? 0) / 500 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionEditar.Diagnostico)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="tratamiento" class="form-label fw-semibold">
+                                    <i class="fas fa-prescription-bottle-alt me-1"></i> Tratamiento
+                                </label>
+                                <InputTextArea id="tratamiento" class="form-control" rows="3"
+                                               @bind-Value="evolucionEditar.Tratamiento" />
+                                <small class="text-muted">
+                                    @(evolucionEditar.Tratamiento?.Length ?? 0) / 500 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionEditar.Tratamiento)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notas" class="form-label fw-semibold">
+                                    <i class="fas fa-sticky-note me-1"></i> Notas <span class="text-muted">(opcional)</span>
+                                </label>
+                                <InputTextArea id="notas" class="form-control" rows="3"
+                                               @bind-Value="evolucionEditar.Notas" />
+                                <small class="text-muted">
+                                    @(evolucionEditar.Notas?.Length ?? 0) / 1000 caracteres
+                                </small>
+                                <ValidationMessage For="@(() => evolucionEditar.Notas)" class="text-danger small" />
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="activo" class="form-check-input"
+                                               @bind-Value="evolucionEditar.Activo" />
+                                <label for="activo" class="form-check-label fw-semibold">
+                                    Evolución activa
+                                </label>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-secondary px-4" @onclick="Cancelar">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-warning px-4">
+                                    <i class="fas fa-save me-1"></i> Actualizar Evolución
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

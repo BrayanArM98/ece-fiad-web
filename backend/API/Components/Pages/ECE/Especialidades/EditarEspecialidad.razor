@@ -1,0 +1,89 @@
+﻿@page "/editar-especialidad/{id:int}"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Especialidad: @especialidadOriginal?.Nombre
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (especialidadOriginal == null)
+                    {
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-spinner fa-pulse me-2"></i>Cargando datos de la especialidad...
+                        </div>
+                    }
+                    else
+                    {
+                        <EditForm Model="@especialidadEditar" OnValidSubmit="@GrabarEspecialidad" FormName="formEditarEspecialidad">
+                            <FluentValidator />
+
+                            @* ====== Campo de solo lectura: Id ====== *@
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-semibold text-muted">
+                                        <i class="fas fa-hashtag me-1"></i> Id de la especialidad
+                                    </label>
+                                    <p class="form-control-plaintext fw-bold bg-light p-2 rounded">
+                                        @especialidadOriginal.Id
+                                    </p>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3 bg-warning-subtle p-2 rounded">
+                                <i class="fas fa-edit me-2"></i>Datos editables
+                            </h5>
+                            <hr class="my-3 text-warning" />
+
+                            @* ====== Campos editables ====== *@
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="nombre" class="form-label fw-semibold">
+                                        <i class="fas fa-stethoscope me-1"></i> Nombre de la especialidad
+                                    </label>
+                                    <InputText id="nombre" class="form-control fw-bold bg-light"
+                                               placeholder="Ej: Cardiología"
+                                               @bind-Value="especialidadEditar.Nombre" />
+                                    <ValidationMessage For="@(() => especialidadEditar.Nombre)" class="text-danger small" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="descripcion" class="form-label fw-semibold">
+                                        <i class="fas fa-align-left me-1"></i> Descripción
+                                        <span class="text-muted small fw-normal">(opcional)</span>
+                                    </label>
+                                    <InputTextArea id="descripcion" class="form-control fw-bold bg-light"
+                                                   rows="4"
+                                                   placeholder="Describe brevemente esta especialidad médica..."
+                                                   @bind-Value="especialidadEditar.Descripcion" />
+                                    <div class="d-flex justify-content-between mt-1">
+                                        <ValidationMessage For="@(() => especialidadEditar.Descripcion)" class="text-danger small" />
+                                        <small class="text-muted">
+                                            @(especialidadEditar.Descripcion?.Length ?? 0) / 500 caracteres
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-secondary px-4" @onclick="Cancelar">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    <i class="fas fa-save me-1"></i> Actualizar Especialidad
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

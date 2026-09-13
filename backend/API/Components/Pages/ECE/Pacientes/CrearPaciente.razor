@@ -1,0 +1,142 @@
+﻿@page "/crear-paciente"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success bg-gradient text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Registro de nuevo paciente
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <EditForm Model="@pacienteDto" OnValidSubmit="@GrabarPaciente" FormName="formCrearPaciente">
+                        <FluentValidator />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nombres" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1"></i> Nombres
+                                </label>
+                                <InputText id="nombres" class="form-control"
+                                           placeholder="Ej: Juan Carlos"
+                                           @bind-Value="pacienteDto.Nombres" />
+                                <ValidationMessage For="@(() => pacienteDto.Nombres)" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="apellidos" class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1"></i> Apellidos
+                                </label>
+                                <InputText id="apellidos" class="form-control"
+                                           placeholder="Ej: Pérez Gómez"
+                                           @bind-Value="pacienteDto.Apellidos" />
+                                <ValidationMessage For="@(() => pacienteDto.Apellidos)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="numeroDocumento" class="form-label fw-semibold">
+                                    <i class="fas fa-id-card me-1"></i> Número Documento
+                                </label>
+                                <InputText id="numeroDocumento" class="form-control"
+                                           placeholder="Ej: 12345678"
+                                           @bind-Value="pacienteDto.NumeroDocumento" />
+                                <ValidationMessage For="@(() => pacienteDto.NumeroDocumento)" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tipoDocumento" class="form-label fw-semibold">
+                                    <i class="fas fa-tag me-1"></i> Tipo Documento
+                                </label>
+                                <InputSelect id="tipoDocumento" class="form-select"
+                                             @bind-Value="pacienteDto.TipoDocumento">
+                                    @foreach (var item in EnumHelper.ObtenerOpcionesEnum<TipoDeDocumento>())
+                                    {
+                                        <option value="@item.Value">@item.Nombre</option>
+                                    }
+                                </InputSelect>
+                                <ValidationMessage For="@(() => pacienteDto.TipoDocumento)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label fw-semibold">
+                                    <i class="fas fa-phone me-1"></i> Teléfono
+                                </label>
+                                <InputText id="telefono" class="form-control"
+                                           placeholder="Ej: 8095551234"
+                                           @bind-Value="pacienteDto.Telefono" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label fw-semibold">
+                                    <i class="fas fa-envelope me-1"></i> Email
+                                </label>
+                                <InputText id="email" class="form-control"
+                                           placeholder="Ej: juan@example.com"
+                                           @bind-Value="pacienteDto.Email" />
+                                <ValidationMessage For="@(() => pacienteDto.Email)" class="text-danger small" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="fechaNacimiento" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-alt me-1"></i> Fecha Nacimiento
+                                </label>
+                                <InputDate id="fechaNacimiento" class="form-control"
+                                           @bind-Value="pacienteDto.FechaNacimiento" />
+                                <ValidationMessage For="@(() => pacienteDto.FechaNacimiento)" class="text-danger small" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="genero" class="form-label fw-semibold">
+                                    <i class="fas fa-venus-mars me-1"></i> Género
+                                </label>
+                                <InputSelect id="genero" class="form-select"
+                                             @bind-Value="pacienteDto.Genero">
+                                    @foreach (var item in EnumHelper.ObtenerOpcionesEnum<Genero>())
+                                    {
+                                        <option value="@item.Value">@item.Nombre</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="grupoSanguineo" class="form-label fw-semibold">
+                                    <i class="fas fa-tint me-1"></i> Grupo Sanguíneo
+                                </label>
+                                <InputSelect id="grupoSanguineo" class="form-select"
+                                             @bind-Value="pacienteDto.GrupoSanguineo">
+                                    @foreach (var item in EnumHelper.ObtenerOpcionesEnum<GrupoSanguineo>())
+                                    {
+                                        <option value="@item.Value">@item.Nombre</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="direccion" class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Dirección
+                                </label>
+                                <InputText id="direccion" class="form-control"
+                                           placeholder="Ej: Av. Siempre Viva 123"
+                                           @bind-Value="pacienteDto.Direccion" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary px-4" @onclick="Cancelar">
+                                <i class="fas fa-times me-1"></i> Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-1"></i> Guardar Paciente
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

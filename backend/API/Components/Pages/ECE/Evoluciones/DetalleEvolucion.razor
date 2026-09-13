@@ -1,0 +1,142 @@
+﻿@page "/detalles-evolucion/{Id:int}"
+@rendermode InteractiveServer
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10 col-sm-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-info text-white text-center rounded-top-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Detalles de la Evolución
+                    </h4>
+                </div>
+
+                <div class="card-body p-4">
+
+                    @if (cargando)
+                    {
+                        <div class="text-center my-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                            <p class="mt-2">Cargando información...</p>
+                        </div>
+                    }
+                    else if (evolucion != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-user me-1"></i> Paciente
+                                </label>
+                                <input type="text" class="form-control" readonly value="@evolucion.NombrePaciente" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-calendar-day me-1"></i> Fecha
+                                </label>
+                                <input type="text" class="form-control" readonly
+                                       value="@evolucion.Fecha.ToString("dd/MM/yyyy")" />
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-user-md me-1"></i> Doctor
+                                </label>
+                                <input type="text" class="form-control" readonly value="@evolucion.NombreDoctor" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-stethoscope me-1"></i> Especialidad
+                                </label>
+                                <input type="text" class="form-control" readonly value="@evolucion.NombreEspecialidad" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-flag me-1"></i> Estado
+                            </label>
+                            <div>
+                                <span class="badge fs-6 @(evolucion.Activo ? "bg-success" : "bg-secondary")">
+                                    @(evolucion.Activo ? "Activa" : "Inactiva")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-stethoscope me-1"></i> Diagnóstico
+                            </label>
+                            <textarea class="form-control" rows="3" readonly>@evolucion.Diagnostico</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-prescription-bottle-alt me-1"></i> Tratamiento
+                            </label>
+                            <textarea class="form-control" rows="3" readonly>@evolucion.Tratamiento</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-sticky-note me-1"></i> Notas
+                            </label>
+                            <textarea class="form-control" rows="3" readonly>@MostrarOPlaceholder(evolucion.Notas)</textarea>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h6 class="fw-semibold mb-3">
+                            <i class="fas fa-history me-1"></i> Información de auditoría
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">Fecha de creación</label>
+                                <input type="text" class="form-control"
+                                       readonly
+                                       value="@evolucion.FechaDeCreacion.ToString("dd/MM/yyyy HH:mm")" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">Última modificación</label>
+                                <input type="text" class="form-control" readonly
+                                       value="@(evolucion.FechaDeModificacion?.ToString("dd/MM/yyyy HH:mm") ?? "Sin modificaciones")" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label small text-muted">Fecha de eliminación</label>
+                                <input type="text" class="form-control" readonly
+                                       value="@(evolucion.FechaDeEliminacion?.ToString("dd/MM/yyyy HH:mm") ?? "No aplica")" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary px-4" @onclick="Volver">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+                            </button>
+                            <button type="button" class="btn btn-primary px-4" @onclick="Editar">
+                                <i class="fas fa-edit me-1"></i> Editar evolución
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            No se encontró la evolución solicitada.
+                        </div>
+                        <div class="text-center mt-3">
+                            <button class="btn btn-secondary" @onclick="Volver">
+                                <i class="fas fa-arrow-left me-1"></i> Volver al listado
+                            </button>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

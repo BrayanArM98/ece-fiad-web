@@ -1,0 +1,27 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+
+@* Paquetes de capas *@
+@using Blazilla
+@using FluentValidation
+
+@* Capa de Dominio *@
+@using Dominio.Enumeraciones
+
+@* Capa de Aplicación *@
+@using Aplicacion.DTOs.Pacientes
+@using Aplicacion.Servicios.Interfaces
+@using Aplicacion.Helpers
+
+@* Capa de Presentación *@
+@using Presentacion
+@using Presentacion.Servicios
+@using Presentacion.Components
+@using Presentacion.Components.Layout
