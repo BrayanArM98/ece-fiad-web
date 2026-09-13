@@ -16,6 +16,10 @@ namespace Aplicacion.Inyecciones
             // FluentValidation: registra todos los validadores del ensamblado actual
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+            // MediatR: registra todos los handlers de Commands y Queries del ensamblado
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(InyeccionDependencias).Assembly));
+
             // Servicios de aplicación
             services.AddScoped<IPacienteService, PacienteService>();
             services.AddScoped<IEspecialidadService, EspecialidadService>();
