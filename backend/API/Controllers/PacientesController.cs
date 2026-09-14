@@ -1,5 +1,7 @@
 ﻿using Aplicacion.DTOs.Pacientes;
+using Aplicacion.Features.Pacientes.Commands.ActualizarPaciente;
 using Aplicacion.Features.Pacientes.Commands.CrearPaciente;
+using Aplicacion.Features.Pacientes.Commands.EliminarPaciente;
 using Aplicacion.Features.Pacientes.Queries.ObtenerPacientePorId;
 using Aplicacion.Features.Pacientes.Queries.ObtenerTodosPacientes;
 using Aplicacion.Servicios.Interfaces;
@@ -117,6 +119,7 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Actualiza un paciente existente.
+    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="id">ID del paciente a actualizar.</param>
     /// <param name="dto">Datos actualizados del paciente.</param>
@@ -134,18 +137,19 @@ public class PacientesController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioPacientes.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarPacienteCommand(dto));
         return MapearResultado(resultado);
     }
 
     /// <summary>
     /// Elimina un paciente (borrado lógico).
+    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="id">ID del paciente a eliminar.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioPacientes.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarPacienteCommand(id));
         return MapearResultado(resultado);
     }
 }
