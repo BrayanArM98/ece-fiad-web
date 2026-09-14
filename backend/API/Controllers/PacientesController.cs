@@ -1,5 +1,7 @@
 ﻿using Aplicacion.DTOs.Pacientes;
+using Aplicacion.Features.Pacientes.Queries.ObtenerTodosPacientes;
 using Aplicacion.Servicios.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -11,20 +13,23 @@ namespace Presentacion.Controllers;
 public class PacientesController : ControladorBase
 {
     private readonly IPacienteService _servicioPacientes;
+    private readonly IMediator _mediator;
 
-    public PacientesController(IPacienteService servicioPacientes)
+    public PacientesController(IPacienteService servicioPacientes, IMediator mediator)
     {
         _servicioPacientes = servicioPacientes;
+        _mediator = mediator;
     }
 
     /// <summary>
     /// Obtiene la lista completa de pacientes.
+    /// Migrado a CQRS: la petición se envía como Query a través de MediatR.
     /// </summary>
     /// <returns>Lista de pacientes registrados.</returns>
     [HttpGet]
     public async Task<IActionResult> ObtenerTodos()
     {
-        var resultado = await _servicioPacientes.ObtenerTodosAsync();
+        var resultado = await _mediator.Send(new ObtenerTodosPacientesQuery());
         return MapearResultado(resultado);
     }
 
