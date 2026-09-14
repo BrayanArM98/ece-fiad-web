@@ -1,4 +1,6 @@
 ﻿using Aplicacion.DTOs.Pacientes;
+using Aplicacion.Features.Pacientes.Commands.CrearPaciente;
+using Aplicacion.Features.Pacientes.Queries.ObtenerPacientePorId;
 using Aplicacion.Features.Pacientes.Queries.ObtenerTodosPacientes;
 using Aplicacion.Servicios.Interfaces;
 using MediatR;
@@ -71,12 +73,13 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Obtiene un paciente específico por su ID.
+    /// Migrado a CQRS: la petición se envía como Query a través de MediatR.
     /// </summary>
     /// <param name="id">Identificador del paciente.</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioPacientes.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerPacientePorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -99,6 +102,7 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Crea un nuevo paciente.
+    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="dto">Datos del paciente a crear.</param>
     [HttpPost]
@@ -107,7 +111,7 @@ public class PacientesController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioPacientes.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearPacienteCommand(dto));
         return MapearCreacion(resultado);
     }
 
