@@ -1,20 +1,27 @@
 ﻿using Aplicacion.DTOs.Especialidades;
-using Aplicacion.Servicios.Interfaces;
+using Aplicacion.Features.Especialidades.Commands.ActualizarEspecialidad;
+using Aplicacion.Features.Especialidades.Commands.CrearEspecialidad;
+using Aplicacion.Features.Especialidades.Commands.EliminarEspecialidad;
+using Aplicacion.Features.Especialidades.Queries.ExisteEspecialidadPorNombre;
+using Aplicacion.Features.Especialidades.Queries.ObtenerEspecialidadPorId;
+using Aplicacion.Features.Especialidades.Queries.ObtenerTodasEspecialidades;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
 
 /// <summary>
 /// Controlador REST para la gestión de especialidades médicas.
-/// Expone endpoints para CRUD completo y consultas auxiliares.
+/// Todas las operaciones se resuelven mediante el patrón CQRS:
+/// las lecturas se envían como Queries y las escrituras como Commands a través de MediatR.
 /// </summary>
 public class EspecialidadesController : ControladorBase
 {
-    private readonly IEspecialidadService _servicioEspecialidades;
+    private readonly IMediator _mediator;
 
-    public EspecialidadesController(IEspecialidadService servicioEspecialidades)
+    public EspecialidadesController(IMediator mediator)
     {
-        _servicioEspecialidades = servicioEspecialidades;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -23,7 +30,7 @@ public class EspecialidadesController : ControladorBase
     [HttpGet]
     public async Task<IActionResult> ObtenerTodos()
     {
-        var resultado = await _servicioEspecialidades.ObtenerTodosAsync();
+        var resultado = await _mediator.Send(new ObtenerTodasEspecialidadesQuery());
         return MapearResultado(resultado);
     }
 
@@ -34,7 +41,7 @@ public class EspecialidadesController : ControladorBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioEspecialidades.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerEspecialidadPorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -46,7 +53,7 @@ public class EspecialidadesController : ControladorBase
     [HttpGet("existe/{nombre}")]
     public async Task<IActionResult> ExistePorNombre(string nombre, [FromQuery] int? idExcluir = null)
     {
-        var existe = await _servicioEspecialidades.ExistePorNombreAsync(nombre, idExcluir);
+        var existe = await _mediator.Send(new ExisteEspecialidadPorNombreQuery(nombre, idExcluir));
         return Ok(new
         {
             exitoso = true,
@@ -65,7 +72,7 @@ public class EspecialidadesController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioEspecialidades.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearEspecialidadCommand(dto));
         return MapearCreacion(resultado);
     }
 
@@ -87,7 +94,7 @@ public class EspecialidadesController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioEspecialidades.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarEspecialidadCommand(dto));
         return MapearResultado(resultado);
     }
 
@@ -98,7 +105,7 @@ public class EspecialidadesController : ControladorBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioEspecialidades.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarEspecialidadCommand(id));
         return MapearResultado(resultado);
     }
 }
