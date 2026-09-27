@@ -1,5 +1,11 @@
 ﻿using Aplicacion.DTOs.Doctores;
-using Aplicacion.Servicios.Interfaces;
+using Aplicacion.Features.Doctores.Commands.ActualizarDoctor;
+using Aplicacion.Features.Doctores.Commands.CrearDoctor;
+using Aplicacion.Features.Doctores.Commands.EliminarDoctor;
+using Aplicacion.Features.Doctores.Queries.ExisteDoctorPorEmail;
+using Aplicacion.Features.Doctores.Queries.ObtenerDoctorPorId;
+using Aplicacion.Features.Doctores.Queries.ObtenerTodosDoctores;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -7,14 +13,15 @@ namespace Presentacion.Controllers;
 /// <summary>
 /// Controlador REST para la gestión de doctores.
 /// Cada doctor está asociado a una especialidad médica.
+/// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
 /// </summary>
 public class DoctoresController : ControladorBase
 {
-    private readonly IDoctorService _servicioDoctores;
+    private readonly IMediator _mediator;
 
-    public DoctoresController(IDoctorService servicioDoctores)
+    public DoctoresController(IMediator mediator)
     {
-        _servicioDoctores = servicioDoctores;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -23,7 +30,7 @@ public class DoctoresController : ControladorBase
     [HttpGet]
     public async Task<IActionResult> ObtenerTodos()
     {
-        var resultado = await _servicioDoctores.ObtenerTodosAsync();
+        var resultado = await _mediator.Send(new ObtenerTodosDoctoresQuery());
         return MapearResultado(resultado);
     }
 
@@ -34,7 +41,7 @@ public class DoctoresController : ControladorBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioDoctores.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerDoctorPorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -46,7 +53,7 @@ public class DoctoresController : ControladorBase
     [HttpGet("existe-email/{email}")]
     public async Task<IActionResult> ExistePorEmail(string email, [FromQuery] int? idExcluir = null)
     {
-        var existe = await _servicioDoctores.ExistePorEmailAsync(email, idExcluir);
+        var existe = await _mediator.Send(new ExisteDoctorPorEmailQuery(email, idExcluir));
         return Ok(new
         {
             exitoso = true,
@@ -65,7 +72,7 @@ public class DoctoresController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioDoctores.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearDoctorCommand(dto));
         return MapearCreacion(resultado);
     }
 
@@ -87,19 +94,19 @@ public class DoctoresController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioDoctores.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarDoctorCommand(dto));
         return MapearResultado(resultado);
     }
 
     /// <summary>
     /// Elimina un doctor (borrado lógico).
-    /// El servicio valida que el doctor no tenga citas asociadas antes de eliminar.
+    /// Se valida que el doctor no tenga citas asociadas antes de eliminar.
     /// </summary>
     /// <param name="id">ID del doctor a eliminar.</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioDoctores.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarDoctorCommand(id));
         return MapearResultado(resultado);
     }
 }
