@@ -20,8 +20,8 @@ namespace Aplicacion.Inyecciones
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(InyeccionDependencias).Assembly));
 
-            // Servicios de aplicación
-            services.AddScoped<IPacienteService, PacienteService>();
+            // Servicios de aplicación pendientes de migrar a CQRS
+            // (Pacientes ya opera completamente con Commands y Queries)
             services.AddScoped<IEspecialidadService, EspecialidadService>();
             services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<ICitaService, CitaService>();
