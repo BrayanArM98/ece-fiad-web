@@ -2,9 +2,11 @@
 using Aplicacion.Features.Pacientes.Commands.ActualizarPaciente;
 using Aplicacion.Features.Pacientes.Commands.CrearPaciente;
 using Aplicacion.Features.Pacientes.Commands.EliminarPaciente;
+using Aplicacion.Features.Pacientes.Queries.ExistePacientePorDocumento;
 using Aplicacion.Features.Pacientes.Queries.ObtenerPacientePorId;
+using Aplicacion.Features.Pacientes.Queries.ObtenerPacientesActivos;
+using Aplicacion.Features.Pacientes.Queries.ObtenerPacientesSinHistoria;
 using Aplicacion.Features.Pacientes.Queries.ObtenerTodosPacientes;
-using Aplicacion.Servicios.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,24 +14,21 @@ namespace Presentacion.Controllers;
 
 /// <summary>
 /// Controlador REST para la gestión de pacientes.
-/// Expone endpoints para CRUD completo y consultas específicas del módulo de pacientes.
+/// Todas las operaciones se resuelven mediante el patrón CQRS:
+/// las lecturas se envían como Queries y las escrituras como Commands a través de MediatR.
 /// </summary>
 public class PacientesController : ControladorBase
 {
-    private readonly IPacienteService _servicioPacientes;
     private readonly IMediator _mediator;
 
-    public PacientesController(IPacienteService servicioPacientes, IMediator mediator)
+    public PacientesController(IMediator mediator)
     {
-        _servicioPacientes = servicioPacientes;
         _mediator = mediator;
     }
 
     /// <summary>
     /// Obtiene la lista completa de pacientes.
-    /// Migrado a CQRS: la petición se envía como Query a través de MediatR.
     /// </summary>
-    /// <returns>Lista de pacientes registrados.</returns>
     [HttpGet]
     public async Task<IActionResult> ObtenerTodos()
     {
@@ -41,41 +40,26 @@ public class PacientesController : ControladorBase
     /// Obtiene la lista de pacientes activos.
     /// Endpoint pensado para alimentar selects del frontend (citas, evoluciones, etc.).
     /// </summary>
-    /// <returns>Lista de pacientes activos.</returns>
     [HttpGet("activos")]
     public async Task<IActionResult> ObtenerActivos()
     {
-        var resultado = await _servicioPacientes.ObtenerTodosAsync();
-
-        if (!resultado.Exitoso)
-            return MapearResultado(resultado);
-
-        // Filtra solo los activos en memoria
-        var activos = resultado.Datos?.Where(p => p.Activo).ToList()
-                      ?? new List<PacienteDTO>();
-
-        return Ok(new
-        {
-            exitoso = true,
-            mensaje = "Pacientes activos obtenidos correctamente.",
-            datos = activos
-        });
+        var resultado = await _mediator.Send(new ObtenerPacientesActivosQuery());
+        return MapearResultado(resultado);
     }
 
     /// <summary>
-    /// Obtiene la lista de pacientes que aún no tienen historia clínica activa.
+    /// Obtiene la lista de pacientes que aún no tienen historia clínica.
     /// Útil para alimentar el dropdown de creación de historias clínicas.
     /// </summary>
     [HttpGet("sin-historia")]
     public async Task<IActionResult> ObtenerSinHistoriaClinica()
     {
-        var resultado = await _servicioPacientes.ObtenerSinHistoriaClinicaAsync();
+        var resultado = await _mediator.Send(new ObtenerPacientesSinHistoriaQuery());
         return MapearResultado(resultado);
     }
 
     /// <summary>
     /// Obtiene un paciente específico por su ID.
-    /// Migrado a CQRS: la petición se envía como Query a través de MediatR.
     /// </summary>
     /// <param name="id">Identificador del paciente.</param>
     [HttpGet("{id:int}")]
@@ -89,11 +73,10 @@ public class PacientesController : ControladorBase
     /// Verifica si existe un paciente con el número de identificación dado.
     /// </summary>
     /// <param name="identificacion">Número de documento a verificar.</param>
-    /// <returns>True si existe, false si no.</returns>
     [HttpGet("existe/{identificacion}")]
     public async Task<IActionResult> ExistePorIdentificacion(string identificacion)
     {
-        var existe = await _servicioPacientes.ExistePorIdentificacionAsync(identificacion);
+        var existe = await _mediator.Send(new ExistePacientePorDocumentoQuery(identificacion));
         return Ok(new
         {
             exitoso = true,
@@ -104,7 +87,6 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Crea un nuevo paciente.
-    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="dto">Datos del paciente a crear.</param>
     [HttpPost]
@@ -119,7 +101,6 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Actualiza un paciente existente.
-    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="id">ID del paciente a actualizar.</param>
     /// <param name="dto">Datos actualizados del paciente.</param>
@@ -143,7 +124,6 @@ public class PacientesController : ControladorBase
 
     /// <summary>
     /// Elimina un paciente (borrado lógico).
-    /// Migrado a CQRS: la petición se envía como Command a través de MediatR.
     /// </summary>
     /// <param name="id">ID del paciente a eliminar.</param>
     [HttpDelete("{id:int}")]
