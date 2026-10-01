@@ -21,8 +21,7 @@ namespace Aplicacion.Inyecciones
                 cfg.RegisterServicesFromAssembly(typeof(InyeccionDependencias).Assembly));
 
             // Servicios de aplicación pendientes de migrar a CQRS
-            // (Pacientes, Especialidades y Doctores ya operan con Commands y Queries)
-            services.AddScoped<ICitaService, CitaService>();
+            // (Pacientes, Especialidades, Doctores y Citas ya operan con Commands y Queries)
             services.AddScoped<IHistoriaClinicaService, HistoriaClinicaService>();
             services.AddScoped<IEvolucionService, EvolucionService>();
 
