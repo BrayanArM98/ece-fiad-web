@@ -1,6 +1,11 @@
 ﻿using Aplicacion.DTOs.Citas;
-using Aplicacion.Servicios.Interfaces;
-using Dominio.Enumeraciones;
+using Aplicacion.Features.Citas.Commands.ActualizarCita;
+using Aplicacion.Features.Citas.Commands.CancelarCita;
+using Aplicacion.Features.Citas.Commands.CrearCita;
+using Aplicacion.Features.Citas.Commands.EliminarCita;
+using Aplicacion.Features.Citas.Queries.ObtenerCitaPorId;
+using Aplicacion.Features.Citas.Queries.ObtenerTodasCitas;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -8,15 +13,15 @@ namespace Presentacion.Controllers;
 /// <summary>
 /// Controlador REST para la gestión de citas médicas.
 /// Cada cita asocia a un paciente con un doctor en una fecha y hora específicas.
-/// Aplica la regla 21: un doctor no puede tener dos citas en el mismo horario.
+/// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
 /// </summary>
 public class CitasController : ControladorBase
 {
-    private readonly ICitaService _servicioCitas;
+    private readonly IMediator _mediator;
 
-    public CitasController(ICitaService servicioCitas)
+    public CitasController(IMediator mediator)
     {
-        _servicioCitas = servicioCitas;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -26,7 +31,7 @@ public class CitasController : ControladorBase
     [HttpGet]
     public async Task<IActionResult> ObtenerTodas()
     {
-        var resultado = await _servicioCitas.ObtenerTodasAsync();
+        var resultado = await _mediator.Send(new ObtenerTodasCitasQuery());
         return MapearResultado(resultado);
     }
 
@@ -37,7 +42,7 @@ public class CitasController : ControladorBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioCitas.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerCitaPorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -52,14 +57,13 @@ public class CitasController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioCitas.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearCitaCommand(dto));
         return MapearCreacion(resultado);
     }
 
     /// <summary>
     /// Actualiza una cita existente.
     /// Permite cambiar paciente, doctor, fecha, motivo, notas y estado.
-    /// Valida disponibilidad horaria del nuevo doctor (regla 21).
     /// </summary>
     /// <param name="id">ID de la cita a actualizar.</param>
     /// <param name="dto">Datos actualizados de la cita.</param>
@@ -76,7 +80,7 @@ public class CitasController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioCitas.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarCitaCommand(dto));
         return MapearResultado(resultado);
     }
 
@@ -88,27 +92,7 @@ public class CitasController : ControladorBase
     [HttpPatch("{id:int}/cancelar")]
     public async Task<IActionResult> Cancelar(int id)
     {
-        // 1. Obtener la cita actual
-        var resultadoCita = await _servicioCitas.ObtenerPorIdAsync(id);
-        if (!resultadoCita.Exitoso || resultadoCita.Datos == null)
-            return MapearResultado(resultadoCita);
-
-        var citaActual = resultadoCita.Datos;
-
-        // 2. Construir el DTO de actualización solo cambiando el estado a Cancelada
-        var dtoActualizar = new ActualizarCitaDTO
-        {
-            Id = citaActual.Id,
-            IdPaciente = citaActual.IdPaciente,
-            IdDoctor = citaActual.IdDoctor,
-            FechaHora = citaActual.FechaHora,
-            Motivo = citaActual.Motivo,
-            Notas = citaActual.Notas,
-            Estado = EstadoCita.Cancelada
-        };
-
-        // 3. Llamar al servicio de actualización
-        var resultado = await _servicioCitas.ActualizarAsync(dtoActualizar);
+        var resultado = await _mediator.Send(new CancelarCitaCommand(id));
         return MapearResultado(resultado);
     }
 
@@ -119,7 +103,7 @@ public class CitasController : ControladorBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioCitas.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarCitaCommand(id));
         return MapearResultado(resultado);
     }
 }
