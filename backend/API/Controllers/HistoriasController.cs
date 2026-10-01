@@ -1,21 +1,27 @@
 ﻿using Aplicacion.DTOs.HistoriasClinicas;
-using Aplicacion.Servicios.Interfaces;
+using Aplicacion.Features.HistoriasClinicas.Commands.ActualizarHistoria;
+using Aplicacion.Features.HistoriasClinicas.Commands.CrearHistoria;
+using Aplicacion.Features.HistoriasClinicas.Commands.EliminarHistoria;
+using Aplicacion.Features.HistoriasClinicas.Queries.ExisteHistoriaParaPaciente;
+using Aplicacion.Features.HistoriasClinicas.Queries.ObtenerHistoriaPorId;
+using Aplicacion.Features.HistoriasClinicas.Queries.ObtenerTodasHistorias;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
 
 /// <summary>
 /// Controlador REST para la gestión de historias clínicas.
-/// Cada historia clínica está asociada a un único paciente.
-/// Aplica la regla 22: un paciente solo puede tener UNA historia clínica activa.
+/// Cada historia clínica está asociada a un único paciente (regla 22).
+/// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
 /// </summary>
 public class HistoriasController : ControladorBase
 {
-    private readonly IHistoriaClinicaService _servicioHistorias;
+    private readonly IMediator _mediator;
 
-    public HistoriasController(IHistoriaClinicaService servicioHistorias)
+    public HistoriasController(IMediator mediator)
     {
-        _servicioHistorias = servicioHistorias;
+        _mediator = mediator;
     }
 
     /// <summary>
@@ -24,7 +30,7 @@ public class HistoriasController : ControladorBase
     [HttpGet]
     public async Task<IActionResult> ObtenerTodas()
     {
-        var resultado = await _servicioHistorias.ObtenerTodasAsync();
+        var resultado = await _mediator.Send(new ObtenerTodasHistoriasQuery());
         return MapearResultado(resultado);
     }
 
@@ -35,7 +41,7 @@ public class HistoriasController : ControladorBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioHistorias.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerHistoriaPorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -48,7 +54,7 @@ public class HistoriasController : ControladorBase
     [HttpGet("existe-paciente/{idPaciente:int}")]
     public async Task<IActionResult> ExisteParaPaciente(int idPaciente, [FromQuery] int? idExcluir = null)
     {
-        var existe = await _servicioHistorias.ExisteHistoriaParaPacienteAsync(idPaciente, idExcluir);
+        var existe = await _mediator.Send(new ExisteHistoriaParaPacienteQuery(idPaciente, idExcluir));
         return Ok(new
         {
             exitoso = true,
@@ -70,7 +76,7 @@ public class HistoriasController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioHistorias.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearHistoriaCommand(dto));
         return MapearCreacion(resultado);
     }
 
@@ -92,7 +98,7 @@ public class HistoriasController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioHistorias.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarHistoriaCommand(dto));
         return MapearResultado(resultado);
     }
 
@@ -103,7 +109,7 @@ public class HistoriasController : ControladorBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioHistorias.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarHistoriaCommand(id));
         return MapearResultado(resultado);
     }
 }
