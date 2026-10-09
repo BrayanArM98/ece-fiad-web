@@ -1,6 +1,4 @@
-﻿using Aplicacion.Servicios.Implementaciones;
-using Aplicacion.Servicios.Interfaces;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -16,14 +14,10 @@ namespace Aplicacion.Inyecciones
             // FluentValidation: registra todos los validadores del ensamblado actual
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // MediatR: registra todos los handlers de Commands y Queries del ensamblado
+            // MediatR: registra todos los Commands y Queries del ensamblado.
+            // Toda la lógica de aplicación opera ahora con el patrón CQRS.
             services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssembly(typeof(InyeccionDependencias).Assembly));
-
-            // Servicios de aplicación pendientes de migrar a CQRS
-            // (Pacientes, Especialidades, Doctores y Citas ya operan con Commands y Queries)
-            services.AddScoped<IHistoriaClinicaService, HistoriaClinicaService>();
-            services.AddScoped<IEvolucionService, EvolucionService>();
 
             return services;
         }

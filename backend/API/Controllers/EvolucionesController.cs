@@ -1,6 +1,13 @@
 ﻿using Aplicacion.DTOs.Evoluciones;
-using Aplicacion.DTOs.HistoriasClinicas;
-using Aplicacion.Servicios.Interfaces;
+using Aplicacion.Features.Evoluciones.Commands.ActualizarEvolucion;
+using Aplicacion.Features.Evoluciones.Commands.CrearEvolucion;
+using Aplicacion.Features.Evoluciones.Commands.EliminarEvolucion;
+using Aplicacion.Features.Evoluciones.Queries.ContarEvolucionesPorPaciente;
+using Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionesPorHistoria;
+using Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionPorId;
+using Aplicacion.Features.Evoluciones.Queries.ObtenerHistorialPaciente;
+using Aplicacion.Features.Evoluciones.Queries.ObtenerTodasEvoluciones;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -9,27 +16,24 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de evoluciones clínicas.
 /// Cada evolución pertenece a una historia clínica y registra los avances
 /// de un paciente: diagnóstico, tratamiento y notas en una fecha específica.
+/// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
 /// </summary>
 public class EvolucionesController : ControladorBase
 {
-    private readonly IEvolucionService _servicioEvoluciones;
-    private readonly IHistoriaClinicaService _servicioHistorias;
+    private readonly IMediator _mediator;
 
-    public EvolucionesController(
-        IEvolucionService servicioEvoluciones,
-        IHistoriaClinicaService servicioHistorias)
+    public EvolucionesController(IMediator mediator)
     {
-        _servicioEvoluciones = servicioEvoluciones;
-        _servicioHistorias = servicioHistorias;
+        _mediator = mediator;
     }
 
     /// <summary>
-    /// Obtiene la lista completa de evoluciones con sus relaciones (paciente, doctor, especialidad).
+    /// Obtiene la lista completa de evoluciones con sus relaciones.
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> ObtenerTodas()
     {
-        var resultado = await _servicioEvoluciones.ObtenerTodasAsync();
+        var resultado = await _mediator.Send(new ObtenerTodasEvolucionesQuery());
         return MapearResultado(resultado);
     }
 
@@ -40,7 +44,7 @@ public class EvolucionesController : ControladorBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> ObtenerPorId(int id)
     {
-        var resultado = await _servicioEvoluciones.ObtenerPorIdAsync(id);
+        var resultado = await _mediator.Send(new ObtenerEvolucionPorIdQuery(id));
         return MapearResultado(resultado);
     }
 
@@ -51,7 +55,7 @@ public class EvolucionesController : ControladorBase
     [HttpGet("historia/{idHistoria:int}")]
     public async Task<IActionResult> ObtenerPorHistoria(int idHistoria)
     {
-        var resultado = await _servicioEvoluciones.ObtenerPorHistoriaClinicaAsync(idHistoria);
+        var resultado = await _mediator.Send(new ObtenerEvolucionesPorHistoriaQuery(idHistoria));
         return MapearResultado(resultado);
     }
 
@@ -62,68 +66,21 @@ public class EvolucionesController : ControladorBase
     [HttpGet("paciente/{idPaciente:int}/contar")]
     public async Task<IActionResult> ContarPorPaciente(int idPaciente)
     {
-        var resultado = await _servicioEvoluciones.ContarPorPacienteAsync(idPaciente);
+        var resultado = await _mediator.Send(new ContarEvolucionesPorPacienteQuery(idPaciente));
         return MapearResultado(resultado);
     }
 
     /// <summary>
     /// Obtiene el historial clínico completo de un paciente: su historia clínica
     /// junto con todas sus evoluciones ordenadas por fecha descendente.
-    /// Este endpoint es el que consume el módulo de Historial del frontend (PDF, sección 2).
+    /// Es el endpoint que consume el módulo de Historial del frontend.
     /// </summary>
     /// <param name="idPaciente">ID del paciente.</param>
     [HttpGet("/api/historial/paciente/{idPaciente:int}")]
     public async Task<IActionResult> ObtenerHistorialPorPaciente(int idPaciente)
     {
-        // 1. Buscar la historia clínica del paciente
-        var resultadoHistorias = await _servicioHistorias.ObtenerTodasAsync();
-        if (!resultadoHistorias.Exitoso)
-            return MapearResultado(resultadoHistorias);
-
-        var historiaPaciente = resultadoHistorias.Datos?
-            .FirstOrDefault(h => h.IdPaciente == idPaciente && h.Activo);
-
-        // 2. Si el paciente no tiene historia activa, devolver respuesta vacía
-        if (historiaPaciente == null)
-        {
-            return Ok(new
-            {
-                exitoso = true,
-                mensaje = "El paciente no tiene historia clínica activa.",
-                datos = new
-                {
-                    tieneHistoria = false,
-                    historia = (HistoriaClinicaDTO?)null,
-                    evoluciones = Array.Empty<EvolucionDTO>()
-                }
-            });
-        }
-
-        // 3. Obtener las evoluciones de esa historia
-        var resultadoEvoluciones = await _servicioEvoluciones
-            .ObtenerPorHistoriaClinicaAsync(historiaPaciente.Id);
-
-        if (!resultadoEvoluciones.Exitoso)
-            return MapearResultado(resultadoEvoluciones);
-
-        // 4. Ordenar por fecha descendente (regla H3 del PDF)
-        var evolucionesOrdenadas = (resultadoEvoluciones.Datos ?? Enumerable.Empty<EvolucionDTO>())
-            .OrderByDescending(e => e.Fecha)
-            .ToList();
-
-        // 5. Componer la respuesta final
-        return Ok(new
-        {
-            exitoso = true,
-            mensaje = "Historial obtenido correctamente.",
-            datos = new
-            {
-                tieneHistoria = true,
-                historia = historiaPaciente,
-                evoluciones = evolucionesOrdenadas,
-                totalEvoluciones = evolucionesOrdenadas.Count
-            }
-        });
+        var resultado = await _mediator.Send(new ObtenerHistorialPacienteQuery(idPaciente));
+        return MapearResultado(resultado);
     }
 
     /// <summary>
@@ -136,7 +93,7 @@ public class EvolucionesController : ControladorBase
         if (dto == null)
             return BadRequest(new { exitoso = false, mensaje = "El cuerpo de la petición es requerido." });
 
-        var resultado = await _servicioEvoluciones.CrearAsync(dto);
+        var resultado = await _mediator.Send(new CrearEvolucionCommand(dto));
         return MapearCreacion(resultado);
     }
 
@@ -158,7 +115,7 @@ public class EvolucionesController : ControladorBase
                 mensaje = "El ID de la ruta no coincide con el ID del cuerpo."
             });
 
-        var resultado = await _servicioEvoluciones.ActualizarAsync(dto);
+        var resultado = await _mediator.Send(new ActualizarEvolucionCommand(dto));
         return MapearResultado(resultado);
     }
 
@@ -169,7 +126,7 @@ public class EvolucionesController : ControladorBase
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {
-        var resultado = await _servicioEvoluciones.EliminarAsync(id);
+        var resultado = await _mediator.Send(new EliminarEvolucionCommand(id));
         return MapearResultado(resultado);
     }
 }
