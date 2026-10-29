@@ -1,4 +1,5 @@
 ﻿using Dominio.Entidades.Citas;
+using Dominio.Enumeraciones;
 
 namespace Aplicacion.Abstracciones
 {
@@ -11,6 +12,15 @@ namespace Aplicacion.Abstracciones
         // Obtiene todas las citas activas con paciente y doctor incluidos.
         // Necesario para que NombrePaciente y NombreDoctor se llenen en el listado.
         Task<IEnumerable<Cita>> ObtenerTodasConRelacionesAsync();
+
+        // Obtiene las citas activas con paciente y doctor, aplicando solo los filtros recibidos.
+        // desde es inclusivo y hastaExclusivo no lo es (el handler lo calcula a partir de la fecha final).
+        Task<IEnumerable<Cita>> ObtenerFiltradasAsync(
+            int? idDoctor,
+            int? idPaciente,
+            DateTime? desde,
+            DateTime? hastaExclusivo,
+            EstadoCita? estado);
 
         // Verifica si un doctor ya tiene una cita programada en el mismo horario.
         // Se usa para la regla de disponibilidad horaria (regla 21 del manual).

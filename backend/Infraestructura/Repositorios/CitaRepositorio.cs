@@ -1,5 +1,6 @@
 ﻿using Aplicacion.Abstracciones;
 using Dominio.Entidades.Citas;
+using Dominio.Enumeraciones;
 using Infraestructura.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,39 @@ namespace Infraestructura.Repositorios
         public async Task<IEnumerable<Cita>> ObtenerTodasConRelacionesAsync()
         {
             return await ObtenActivosNoEliminados()
+                .Include(c => c.Paciente)
+                .Include(c => c.Doctor)
+                .OrderByDescending(c => c.FechaHora)
+                .ToListAsync();
+        }
+
+        // Trae las citas activas con paciente y doctor, aplicando solo los filtros recibidos.
+        // El filtrado se hace en SQL Server, no en memoria.
+        public async Task<IEnumerable<Cita>> ObtenerFiltradasAsync(
+            int? idDoctor,
+            int? idPaciente,
+            DateTime? desde,
+            DateTime? hastaExclusivo,
+            EstadoCita? estado)
+        {
+            var consulta = ObtenActivosNoEliminados();
+
+            if (idDoctor.HasValue)
+                consulta = consulta.Where(c => c.IdDoctor == idDoctor.Value);
+
+            if (idPaciente.HasValue)
+                consulta = consulta.Where(c => c.IdPaciente == idPaciente.Value);
+
+            if (desde.HasValue)
+                consulta = consulta.Where(c => c.FechaHora >= desde.Value);
+
+            if (hastaExclusivo.HasValue)
+                consulta = consulta.Where(c => c.FechaHora < hastaExclusivo.Value);
+
+            if (estado.HasValue)
+                consulta = consulta.Where(c => c.Estado == estado.Value);
+
+            return await consulta
                 .Include(c => c.Paciente)
                 .Include(c => c.Doctor)
                 .OrderByDescending(c => c.FechaHora)
