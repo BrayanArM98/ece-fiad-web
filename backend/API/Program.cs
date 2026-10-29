@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Aplicacion.Abstracciones;
 using Aplicacion.Inyecciones;
 using Infraestructura.Data;
+using Infraestructura.Reportes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +26,10 @@ builder.Services.AddDbContext<ContextoECE>(options =>
 
 // Registrar UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, Infraestructura.UnitOfWork.UnitOfWork>();
+
+// Reportes: consultas de solo lectura y exportación a PDF y Excel
+builder.Services.AddScoped<IConsultasReportes, ConsultasReportes>();
+builder.Services.AddSingleton<IExportadorReportes, ExportadorReportes>();
 
 // Registrar servicios de la capa de Aplicación.
 // La licencia de AutoMapper es opcional y se lee de la configuración (AutoMapper:LicenseKey).
@@ -176,7 +181,8 @@ builder.Services.AddCors(options =>
         else
             policy.AllowAnyOrigin();
 
-        policy.AllowAnyMethod().AllowAnyHeader();
+        // Content-Disposition trae el nombre del archivo al descargar un reporte
+        policy.AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("Content-Disposition");
     });
 });
 
