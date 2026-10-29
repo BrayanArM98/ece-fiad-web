@@ -8,6 +8,7 @@
         ICitaRepositorio Citas { get; }
         IHistoriaClinicaRepositorio HistoriasClinicas { get; }
         IEvolucionRepositorio Evoluciones { get; }
+        IUsuarioRepositorio Usuarios { get; }
 
         Task<int> GuardarCambiosAsync();
     }

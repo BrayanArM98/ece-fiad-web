@@ -1,9 +1,16 @@
+using System.Threading.RateLimiting;
 using Aplicacion.Abstracciones;
 using Aplicacion.Inyecciones;
 using Infraestructura.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Presentacion.Middleware;
+using Presentacion.Seguridad;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +28,98 @@ builder.Services.AddScoped<IUnitOfWork, Infraestructura.UnitOfWork.UnitOfWork>()
 // Registrar servicios de la capa de Aplicación.
 // La licencia de AutoMapper es opcional y se lee de la configuración (AutoMapper:LicenseKey).
 builder.Services.AgregarAplicacion(builder.Configuration["AutoMapper:LicenseKey"]);
+
+// ============================================
+// SEGURIDAD: USUARIOS, TOKENS Y ROLES
+// ============================================
+
+// Usuario de la petición (lo leen los handlers para aplicar reglas por rol)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUsuarioActual, UsuarioActual>();
+builder.Services.AddSingleton<IServicioContrasenas, ServicioContrasenas>();
+
+// Configuración de los tokens; si falta la clave, la API no arranca y dice por qué
+builder.Services.Configure<OpcionesJwt>(builder.Configuration.GetSection(OpcionesJwt.Seccion));
+var opcionesJwt = builder.Configuration.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
+opcionesJwt.Validar();
+builder.Services.AddSingleton<IGeneradorTokens, GeneradorTokensJwt>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Se conservan los nombres cortos de los claims ("sub", "role", ...)
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = opcionesJwt.Emisor,
+            ValidateAudience = true,
+            ValidAudience = opcionesJwt.Audiencia,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = opcionesJwt.ObtenerLlave(),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            NameClaimType = ClaimsJwt.Nombre,
+            RoleClaimType = ClaimsJwt.Rol
+        };
+
+        // 401 y 403 con la misma forma que el resto de la API
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async contexto =>
+            {
+                contexto.HandleResponse();
+                contexto.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await contexto.Response.WriteAsJsonAsync(new
+                {
+                    exitoso = false,
+                    mensaje = "Tu sesión no es válida o expiró. Inicia sesión de nuevo.",
+                    errores = Array.Empty<string>()
+                });
+            },
+            OnForbidden = async contexto =>
+            {
+                contexto.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await contexto.Response.WriteAsJsonAsync(new
+                {
+                    exitoso = false,
+                    mensaje = "No tienes permiso para realizar esta acción.",
+                    errores = Array.Empty<string>()
+                });
+            }
+        };
+    });
+
+// Todos los endpoints requieren sesión, salvo los marcados con [AllowAnonymous] (el login)
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
+// Máximo 5 intentos de inicio de sesión por minuto por dirección IP
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("login", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        contexto.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
+    options.OnRejected = async (contexto, token) =>
+    {
+        await contexto.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            exitoso = false,
+            mensaje = "Demasiados intentos de inicio de sesión. Espera un minuto e intenta de nuevo.",
+            errores = Array.Empty<string>()
+        }, token);
+    };
+});
 
 // ============================================
 // SERVICIOS DE API REST
@@ -74,9 +173,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Swagger / OpenAPI para documentación automática
+// Swagger / OpenAPI para documentación automática, con el botón "Authorize" para pegar el token
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Pega el token que devuelve POST /api/Auth/login (sin la palabra Bearer)."
+    });
+    options.AddSecurityRequirement(documento => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", documento)] = []
+    });
+});
 
 var app = builder.Build();
 
@@ -108,8 +220,16 @@ app.UseHttpsRedirection();
 // Habilitar CORS (debe ir antes de MapControllers)
 app.UseCors("PermitirTodo");
 
+// Quién es el usuario (token) y qué puede hacer (roles)
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
+
 // Endpoints de API REST
 app.MapControllers();
+
+// Primer administrador si la base no tiene usuarios
+await app.CrearAdministradorInicialAsync();
 
 app.Run();
 
