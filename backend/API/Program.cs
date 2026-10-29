@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Presentacion.Configuracion;
 using Presentacion.Middleware;
 using Presentacion.Seguridad;
 
@@ -162,14 +163,20 @@ builder.Services.AddControllers()
 builder.Services.AddExceptionHandler<ManejadorGlobalExcepciones>();
 builder.Services.AddProblemDetails();
 
-// CORS abierto para que cualquier frontend pueda consumir la API
+// CORS: en el servidor solo se permiten los orígenes configurados (Cors:OrigenesPermitidos),
+// por ejemplo el dominio del frontend en Vercel. Sin la lista, se permite cualquier origen (desarrollo).
+// La app móvil no usa CORS: esa restricción solo aplica a navegadores.
+var origenesPermitidos = builder.Configuration.GetSection("Cors:OrigenesPermitidos").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PermitirTodo", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (origenesPermitidos.Length > 0)
+            policy.WithOrigins(origenesPermitidos);
+        else
+            policy.AllowAnyOrigin();
+
+        policy.AllowAnyMethod().AllowAnyHeader();
     });
 });
 
@@ -204,8 +211,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Swagger solo en desarrollo
-if (app.Environment.IsDevelopment())
+// Swagger en desarrollo, y en el servidor solo si Swagger:Habilitar = true
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("Swagger:Habilitar"))
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -218,7 +225,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Habilitar CORS (debe ir antes de MapControllers)
-app.UseCors("PermitirTodo");
+app.UseCors("Frontend");
 
 // Quién es el usuario (token) y qué puede hacer (roles)
 app.UseAuthentication();
@@ -228,8 +235,11 @@ app.UseRateLimiter();
 // Endpoints de API REST
 app.MapControllers();
 
-// Primer administrador si la base no tiene usuarios
-await app.CrearAdministradorInicialAsync();
+// Verificación de que la API está en línea (la usa el servidor de despliegue)
+app.MapGet("/salud", () => Results.Ok(new { estado = "en línea" })).AllowAnonymous();
+
+// Migraciones, administrador inicial y datos de demostración según la configuración
+await app.PrepararBaseDeDatosAsync();
 
 app.Run();
 
