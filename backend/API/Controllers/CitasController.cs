@@ -25,13 +25,15 @@ public class CitasController : ControladorBase
     }
 
     /// <summary>
-    /// Obtiene la lista completa de citas con datos de paciente y doctor incluidos.
-    /// El frontend aplica los filtros por fecha, paciente y estado en memoria.
+    /// Obtiene las citas con datos de paciente y doctor incluidos.
+    /// Todos los filtros son opcionales y se aplican en la base de datos, por ejemplo:
+    /// GET /api/Citas?idDoctor=1&amp;desde=2026-10-29&amp;hasta=2026-10-29&amp;estado=Pendiente
     /// </summary>
+    /// <param name="filtro">Doctor, paciente, rango de fechas (hasta incluye todo el día) y estado.</param>
     [HttpGet]
-    public async Task<IActionResult> ObtenerTodas()
+    public async Task<IActionResult> ObtenerTodas([FromQuery] FiltroCitasDTO filtro)
     {
-        var resultado = await _mediator.Send(new ObtenerTodasCitasQuery());
+        var resultado = await _mediator.Send(new ObtenerTodasCitasQuery(filtro));
         return MapearResultado(resultado);
     }
 
