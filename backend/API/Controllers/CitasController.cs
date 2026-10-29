@@ -1,11 +1,14 @@
 ﻿using Aplicacion.DTOs.Citas;
 using Aplicacion.Features.Citas.Commands.ActualizarCita;
+using Aplicacion.Features.Citas.Commands.CambiarEstadoCita;
 using Aplicacion.Features.Citas.Commands.CancelarCita;
 using Aplicacion.Features.Citas.Commands.CrearCita;
 using Aplicacion.Features.Citas.Commands.EliminarCita;
 using Aplicacion.Features.Citas.Queries.ObtenerCitaPorId;
 using Aplicacion.Features.Citas.Queries.ObtenerTodasCitas;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -14,6 +17,8 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de citas médicas.
 /// Cada cita asocia a un paciente con un doctor en una fecha y hora específicas.
 /// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
+/// Acceso: administrador y recepción agendan y modifican; el médico registra el resultado de sus citas.
+/// Un paciente solo ve sus citas y un médico solo las de su agenda.
 /// </summary>
 public class CitasController : ControladorBase
 {
@@ -53,6 +58,7 @@ public class CitasController : ControladorBase
     /// Valida que el doctor no tenga otra cita en el mismo horario (regla 21).
     /// </summary>
     /// <param name="dto">Datos de la cita a crear.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearCitaDTO dto)
     {
@@ -69,6 +75,7 @@ public class CitasController : ControladorBase
     /// </summary>
     /// <param name="id">ID de la cita a actualizar.</param>
     /// <param name="dto">Datos actualizados de la cita.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarCitaDTO dto)
     {
@@ -91,6 +98,7 @@ public class CitasController : ControladorBase
     /// Endpoint pensado para el botón "Cancelar" del frontend.
     /// </summary>
     /// <param name="id">ID de la cita a cancelar.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpPatch("{id:int}/cancelar")]
     public async Task<IActionResult> Cancelar(int id)
     {
@@ -99,9 +107,24 @@ public class CitasController : ControladorBase
     }
 
     /// <summary>
+    /// Registra el resultado de una cita: Confirmada, Completada o NoAsistio.
+    /// Un médico solo puede cambiar el estado de sus propias citas.
+    /// </summary>
+    /// <param name="id">ID de la cita.</param>
+    /// <param name="dto">Nuevo estado.</param>
+    [Authorize(Roles = Roles.Personal)]
+    [HttpPatch("{id:int}/estado")]
+    public async Task<IActionResult> CambiarEstado(int id, [FromBody] CambiarEstadoCitaDTO dto)
+    {
+        var resultado = await _mediator.Send(new CambiarEstadoCitaCommand(id, dto));
+        return MapearResultado(resultado);
+    }
+
+    /// <summary>
     /// Elimina una cita (borrado lógico).
     /// </summary>
     /// <param name="id">ID de la cita a eliminar.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

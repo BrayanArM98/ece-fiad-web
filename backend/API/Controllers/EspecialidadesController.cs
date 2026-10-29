@@ -5,7 +5,9 @@ using Aplicacion.Features.Especialidades.Commands.EliminarEspecialidad;
 using Aplicacion.Features.Especialidades.Queries.ExisteEspecialidadPorNombre;
 using Aplicacion.Features.Especialidades.Queries.ObtenerEspecialidadPorId;
 using Aplicacion.Features.Especialidades.Queries.ObtenerTodasEspecialidades;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -14,6 +16,7 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de especialidades médicas.
 /// Todas las operaciones se resuelven mediante el patrón CQRS:
 /// las lecturas se envían como Queries y las escrituras como Commands a través de MediatR.
+/// Acceso: cualquier usuario autenticado consulta; solo el administrador modifica.
 /// </summary>
 public class EspecialidadesController : ControladorBase
 {
@@ -50,6 +53,7 @@ public class EspecialidadesController : ControladorBase
     /// </summary>
     /// <param name="nombre">Nombre de la especialidad a verificar.</param>
     /// <param name="idExcluir">ID a excluir de la verificación (útil al editar).</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpGet("existe/{nombre}")]
     public async Task<IActionResult> ExistePorNombre(string nombre, [FromQuery] int? idExcluir = null)
     {
@@ -66,6 +70,7 @@ public class EspecialidadesController : ControladorBase
     /// Crea una nueva especialidad.
     /// </summary>
     /// <param name="dto">Datos de la especialidad a crear.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearEspecialidadDTO dto)
     {
@@ -81,6 +86,7 @@ public class EspecialidadesController : ControladorBase
     /// </summary>
     /// <param name="id">ID de la especialidad a actualizar.</param>
     /// <param name="dto">Datos actualizados.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarEspecialidadDTO dto)
     {
@@ -102,6 +108,7 @@ public class EspecialidadesController : ControladorBase
     /// Elimina una especialidad (borrado lógico).
     /// </summary>
     /// <param name="id">ID de la especialidad a eliminar.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

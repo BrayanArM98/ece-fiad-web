@@ -5,7 +5,9 @@ using Aplicacion.Features.HistoriasClinicas.Commands.EliminarHistoria;
 using Aplicacion.Features.HistoriasClinicas.Queries.ExisteHistoriaParaPaciente;
 using Aplicacion.Features.HistoriasClinicas.Queries.ObtenerHistoriaPorId;
 using Aplicacion.Features.HistoriasClinicas.Queries.ObtenerTodasHistorias;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -14,7 +16,9 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de historias clínicas.
 /// Cada historia clínica está asociada a un único paciente (regla 22).
 /// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
+/// Acceso: administrador y médico (la recepción no ve información clínica).
 /// </summary>
+[Authorize(Roles = Roles.AdministradorOMedico)]
 public class HistoriasController : ControladorBase
 {
     private readonly IMediator _mediator;
@@ -106,6 +110,7 @@ public class HistoriasController : ControladorBase
     /// Elimina una historia clínica (borrado lógico).
     /// </summary>
     /// <param name="id">ID de la historia a eliminar.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

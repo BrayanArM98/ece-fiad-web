@@ -7,7 +7,9 @@ using Aplicacion.Features.Pacientes.Queries.ObtenerPacientePorId;
 using Aplicacion.Features.Pacientes.Queries.ObtenerPacientesActivos;
 using Aplicacion.Features.Pacientes.Queries.ObtenerPacientesSinHistoria;
 using Aplicacion.Features.Pacientes.Queries.ObtenerTodosPacientes;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -16,6 +18,8 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de pacientes.
 /// Todas las operaciones se resuelven mediante el patrón CQRS:
 /// las lecturas se envían como Queries y las escrituras como Commands a través de MediatR.
+/// Acceso: el personal consulta; administrador y recepción registran y modifican.
+/// Un paciente solo puede consultar su propio registro (GET /api/Pacientes/{id}).
 /// </summary>
 public class PacientesController : ControladorBase
 {
@@ -29,6 +33,7 @@ public class PacientesController : ControladorBase
     /// <summary>
     /// Obtiene la lista completa de pacientes.
     /// </summary>
+    [Authorize(Roles = Roles.Personal)]
     [HttpGet]
     public async Task<IActionResult> ObtenerTodos()
     {
@@ -40,6 +45,7 @@ public class PacientesController : ControladorBase
     /// Obtiene la lista de pacientes activos.
     /// Endpoint pensado para alimentar selects del frontend (citas, evoluciones, etc.).
     /// </summary>
+    [Authorize(Roles = Roles.Personal)]
     [HttpGet("activos")]
     public async Task<IActionResult> ObtenerActivos()
     {
@@ -51,6 +57,7 @@ public class PacientesController : ControladorBase
     /// Obtiene la lista de pacientes que aún no tienen historia clínica.
     /// Útil para alimentar el dropdown de creación de historias clínicas.
     /// </summary>
+    [Authorize(Roles = Roles.Personal)]
     [HttpGet("sin-historia")]
     public async Task<IActionResult> ObtenerSinHistoriaClinica()
     {
@@ -73,6 +80,7 @@ public class PacientesController : ControladorBase
     /// Verifica si existe un paciente con el número de identificación dado.
     /// </summary>
     /// <param name="identificacion">Número de documento a verificar.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpGet("existe/{identificacion}")]
     public async Task<IActionResult> ExistePorIdentificacion(string identificacion)
     {
@@ -89,6 +97,7 @@ public class PacientesController : ControladorBase
     /// Crea un nuevo paciente.
     /// </summary>
     /// <param name="dto">Datos del paciente a crear.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearPacienteDTO dto)
     {
@@ -104,6 +113,7 @@ public class PacientesController : ControladorBase
     /// </summary>
     /// <param name="id">ID del paciente a actualizar.</param>
     /// <param name="dto">Datos actualizados del paciente.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarPacienteDTO dto)
     {
@@ -126,6 +136,7 @@ public class PacientesController : ControladorBase
     /// Elimina un paciente (borrado lógico).
     /// </summary>
     /// <param name="id">ID del paciente a eliminar.</param>
+    [Authorize(Roles = Roles.AdministradorORecepcionista)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

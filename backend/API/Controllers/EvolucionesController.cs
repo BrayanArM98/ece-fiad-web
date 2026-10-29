@@ -7,7 +7,9 @@ using Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionesPorHistoria;
 using Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionPorId;
 using Aplicacion.Features.Evoluciones.Queries.ObtenerHistorialPaciente;
 using Aplicacion.Features.Evoluciones.Queries.ObtenerTodasEvoluciones;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -17,7 +19,9 @@ namespace Presentacion.Controllers;
 /// Cada evolución pertenece a una historia clínica y registra los avances
 /// de un paciente: diagnóstico, tratamiento y notas en una fecha específica.
 /// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
+/// Acceso: administrador y médico (la recepción no ve información clínica).
 /// </summary>
+[Authorize(Roles = Roles.AdministradorOMedico)]
 public class EvolucionesController : ControladorBase
 {
     private readonly IMediator _mediator;
@@ -123,6 +127,7 @@ public class EvolucionesController : ControladorBase
     /// Elimina una evolución (borrado lógico).
     /// </summary>
     /// <param name="id">ID de la evolución a eliminar.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

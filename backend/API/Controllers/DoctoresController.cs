@@ -5,7 +5,9 @@ using Aplicacion.Features.Doctores.Commands.EliminarDoctor;
 using Aplicacion.Features.Doctores.Queries.ExisteDoctorPorEmail;
 using Aplicacion.Features.Doctores.Queries.ObtenerDoctorPorId;
 using Aplicacion.Features.Doctores.Queries.ObtenerTodosDoctores;
+using Aplicacion.Seguridad;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentacion.Controllers;
@@ -14,6 +16,7 @@ namespace Presentacion.Controllers;
 /// Controlador REST para la gestión de doctores.
 /// Cada doctor está asociado a una especialidad médica.
 /// Todas las operaciones se resuelven mediante el patrón CQRS a través de MediatR.
+/// Acceso: cualquier usuario autenticado consulta; solo el administrador modifica.
 /// </summary>
 public class DoctoresController : ControladorBase
 {
@@ -50,6 +53,7 @@ public class DoctoresController : ControladorBase
     /// </summary>
     /// <param name="email">Email a verificar.</param>
     /// <param name="idExcluir">ID a excluir de la verificación (útil al editar).</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpGet("existe-email/{email}")]
     public async Task<IActionResult> ExistePorEmail(string email, [FromQuery] int? idExcluir = null)
     {
@@ -66,6 +70,7 @@ public class DoctoresController : ControladorBase
     /// Crea un nuevo doctor.
     /// </summary>
     /// <param name="dto">Datos del doctor a crear, incluyendo su especialidad.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpPost]
     public async Task<IActionResult> Crear([FromBody] CrearDoctorDTO dto)
     {
@@ -81,6 +86,7 @@ public class DoctoresController : ControladorBase
     /// </summary>
     /// <param name="id">ID del doctor a actualizar.</param>
     /// <param name="dto">Datos actualizados del doctor.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Actualizar(int id, [FromBody] ActualizarDoctorDTO dto)
     {
@@ -103,6 +109,7 @@ public class DoctoresController : ControladorBase
     /// Se valida que el doctor no tenga citas asociadas antes de eliminar.
     /// </summary>
     /// <param name="id">ID del doctor a eliminar.</param>
+    [Authorize(Roles = Roles.Administrador)]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Eliminar(int id)
     {

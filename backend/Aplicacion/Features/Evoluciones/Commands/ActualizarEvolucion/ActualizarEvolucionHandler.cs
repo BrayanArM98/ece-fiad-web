@@ -9,6 +9,7 @@ namespace Aplicacion.Features.Evoluciones.Commands.ActualizarEvolucion
 {
     /// <summary>
     /// Manejador que actualiza una evolución existente.
+    /// Un médico solo puede editar las evoluciones que él registró y no puede cambiar su autor.
     /// </summary>
     public class ActualizarEvolucionHandler
         : IRequestHandler<ActualizarEvolucionCommand, ResultadoAccion<EvolucionDTO>>
@@ -16,15 +17,18 @@ namespace Aplicacion.Features.Evoluciones.Commands.ActualizarEvolucion
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IValidator<ActualizarEvolucionDTO> _validador;
+        private readonly IUsuarioActual _usuarioActual;
 
         public ActualizarEvolucionHandler(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            IValidator<ActualizarEvolucionDTO> validador)
+            IValidator<ActualizarEvolucionDTO> validador,
+            IUsuarioActual usuarioActual)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _validador = validador;
+            _usuarioActual = usuarioActual;
         }
 
         public async Task<ResultadoAccion<EvolucionDTO>> Handle(
@@ -47,6 +51,16 @@ namespace Aplicacion.Features.Evoluciones.Commands.ActualizarEvolucion
             {
                 return ResultadoAccion<EvolucionDTO>.Falla(
                     "La evolución que intenta actualizar no existe.");
+            }
+
+            if (_usuarioActual.EsMedico)
+            {
+                if (evolucion.IdDoctor != _usuarioActual.IdDoctor)
+                    return ResultadoAccion<EvolucionDTO>.Falla(
+                        "Solo puedes editar las evoluciones que registraste.");
+
+                // El autor no cambia
+                dto.IdDoctor = evolucion.IdDoctor;
             }
 
             // 3. Aplicar cambios y persistir
