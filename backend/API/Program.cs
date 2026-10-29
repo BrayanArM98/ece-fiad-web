@@ -16,8 +16,9 @@ builder.Services.AddDbContext<ContextoECE>(options =>
 // Registrar UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, Infraestructura.UnitOfWork.UnitOfWork>();
 
-// Registrar servicios de la capa de Aplicación
-builder.Services.AgregarAplicacion();
+// Registrar servicios de la capa de Aplicación.
+// La licencia de AutoMapper es opcional y se lee de la configuración (AutoMapper:LicenseKey).
+builder.Services.AgregarAplicacion(builder.Configuration["AutoMapper:LicenseKey"]);
 
 // ============================================
 // SERVICIOS DE API REST
