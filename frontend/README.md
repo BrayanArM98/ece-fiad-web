@@ -1,16 +1,17 @@
-# React + Vite
+# ECE-FIAD Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend del expediente clínico electrónico: React, TypeScript, Vite, Tailwind CSS y shadcn/ui. Consume la API de `../backend`.
 
-Currently, two official plugins are available:
+## Desarrollo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env.local   # en Windows: copy .env.example .env.local
+npm run dev
+```
 
-## React Compiler
+La aplicación abre en `http://localhost:5173` y usa la API indicada en `VITE_API_URL`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Especificaciones
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+El diseño y las pantallas están en [`../specs`](../specs): `frontend-diseno.md` y `frontend-pantallas.md`.
