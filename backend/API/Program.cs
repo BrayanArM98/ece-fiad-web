@@ -1,7 +1,9 @@
 using Aplicacion.Abstracciones;
 using Aplicacion.Inyecciones;
 using Infraestructura.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Presentacion.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,7 +37,31 @@ builder.Services.AddControllers()
         // Evita ciclos infinitos en la serialización
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Cuando el cuerpo no se puede leer (JSON mal formado, enum desconocido, fecha inválida),
+        // se responde con la misma forma que el resto de la API y en español.
+        options.InvalidModelStateResponseFactory = contexto =>
+        {
+            var errores = contexto.ModelState
+                .Where(campo => campo.Value?.Errors.Count > 0)
+                .Select(campo => DescribirCampoInvalido(campo.Key))
+                .Distinct()
+                .ToList();
+
+            return new BadRequestObjectResult(new
+            {
+                exitoso = false,
+                mensaje = "La solicitud tiene datos con un formato inválido.",
+                errores
+            });
+        };
     });
+
+// Errores no controlados: se registran en el log y se responde 500 sin detalles internos
+builder.Services.AddExceptionHandler<ManejadorGlobalExcepciones>();
+builder.Services.AddProblemDetails();
 
 // CORS abierto para que cualquier frontend pueda consumir la API
 builder.Services.AddCors(options =>
@@ -53,6 +79,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Debe ir primero para atrapar errores de todo el pipeline
+app.UseExceptionHandler();
 
 // ============================================
 // PIPELINE HTTP
@@ -83,3 +112,12 @@ app.UseCors("PermitirTodo");
 app.MapControllers();
 
 app.Run();
+
+// Convierte la clave del ModelState ("$.fechaNacimiento", "dto") en un mensaje legible
+static string DescribirCampoInvalido(string clave)
+{
+    var campo = clave.Replace("$.", string.Empty).Replace("$", string.Empty).Trim('.');
+    return string.IsNullOrEmpty(campo) || campo.Equals("dto", StringComparison.OrdinalIgnoreCase)
+        ? "El cuerpo de la petición es requerido o no es un JSON válido."
+        : $"El campo '{campo}' tiene un valor con formato inválido.";
+}
