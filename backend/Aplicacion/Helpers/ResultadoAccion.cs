@@ -17,6 +17,22 @@
         {
             return new ResultadoAccion<T> { Exitoso = false, Mensaje = mensaje, Errores = errores ?? new() };
         }
+
+        /// <summary>
+        /// Falla por datos que no pasan las validaciones (FluentValidation).
+        /// El mensaje resume todos los errores para clientes que solo muestran el mensaje
+        /// y la lista Errores los entrega por separado para mostrarlos uno por uno.
+        /// </summary>
+        public static ResultadoAccion<T> FallaValidacion(IEnumerable<string> errores)
+        {
+            var lista = errores.ToList();
+            return new ResultadoAccion<T>
+            {
+                Exitoso = false,
+                Mensaje = $"Datos inválidos: {string.Join(" | ", lista)}",
+                Errores = lista
+            };
+        }
     }
 
     // Versión sin datos: para operaciones que no retornan datos (Eliminar)

@@ -5,7 +5,8 @@ namespace Presentacion.Controllers;
 
 /// <summary>
 /// Clase base para todos los controladores REST de ECE-FIAD.
-/// Provee helpers para traducir ResultadoAccion / ResultadoAccion T  a respuestas HTTP estándar.
+/// Traduce ResultadoAccion / ResultadoAccion T a respuestas HTTP con la misma forma:
+/// { exitoso, mensaje, datos } cuando sale bien y { exitoso, mensaje, errores } cuando falla.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -13,7 +14,7 @@ namespace Presentacion.Controllers;
 public abstract class ControladorBase : ControllerBase
 {
     /// <summary>
-    /// Traduce un ResultadoAccion T  a una respuesta HTTP con el código correcto.
+    /// Traduce un ResultadoAccion T a una respuesta HTTP con el código correcto.
     /// Usar para operaciones GET, PUT, DELETE que devuelven datos o confirmación.
     /// </summary>
     protected IActionResult MapearResultado<T>(ResultadoAccion<T> resultado)
@@ -28,7 +29,7 @@ public abstract class ControladorBase : ControllerBase
             });
         }
 
-        return MapearError(resultado.Mensaje);
+        return MapearError(resultado.Mensaje, resultado.Errores);
     }
 
     /// <summary>
@@ -46,11 +47,11 @@ public abstract class ControladorBase : ControllerBase
             });
         }
 
-        return MapearError(resultado.Mensaje);
+        return MapearError(resultado.Mensaje, resultado.Errores);
     }
 
     /// <summary>
-    /// Traduce un ResultadoAccion T  exitoso a una respuesta 201 Created.
+    /// Traduce un ResultadoAccion T exitoso a una respuesta 201 Created.
     /// Usar específicamente para operaciones POST que crean recursos nuevos.
     /// </summary>
     protected IActionResult MapearCreacion<T>(ResultadoAccion<T> resultado)
@@ -65,16 +66,23 @@ public abstract class ControladorBase : ControllerBase
             });
         }
 
-        return MapearError(resultado.Mensaje);
+        return MapearError(resultado.Mensaje, resultado.Errores);
     }
 
     /// <summary>
     /// Inspecciona el mensaje de error y decide el código HTTP más apropiado.
     /// 404 si dice "no encontrado", 409 si dice "ya existe / duplicado", 400 en cualquier otro caso.
+    /// La lista de errores (por ejemplo, de validación) siempre se incluye para que el cliente pueda mostrarlos.
     /// </summary>
-    private IActionResult MapearError(string? mensaje)
+    private IActionResult MapearError(string? mensaje, List<string>? errores)
     {
         var msg = (mensaje ?? string.Empty).ToLowerInvariant();
+        var cuerpo = new
+        {
+            exitoso = false,
+            mensaje,
+            errores = errores ?? new List<string>()
+        };
 
         // 404 Not Found
         if (msg.Contains("no encontrado") ||
@@ -82,11 +90,7 @@ public abstract class ControladorBase : ControllerBase
             msg.Contains("no se encontró") ||
             msg.Contains("no se encontro"))
         {
-            return NotFound(new
-            {
-                exitoso = false,
-                mensaje
-            });
+            return NotFound(cuerpo);
         }
 
         // 409 Conflict
@@ -97,18 +101,10 @@ public abstract class ControladorBase : ControllerBase
             msg.Contains("ya esta") ||
             msg.Contains("ocupad"))
         {
-            return Conflict(new
-            {
-                exitoso = false,
-                mensaje
-            });
+            return Conflict(cuerpo);
         }
 
         // 400 Bad Request por defecto
-        return BadRequest(new
-        {
-            exitoso = false,
-            mensaje
-        });
+        return BadRequest(cuerpo);
     }
 }
