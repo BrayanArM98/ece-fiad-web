@@ -4,6 +4,7 @@ using Dominio.Entidades.Especialidades;
 using Dominio.Entidades.Evoluciones;
 using Dominio.Entidades.HistoriasClinicas;
 using Dominio.Entidades.Pacientes;
+using Dominio.Entidades.Usuarios;
 using Infraestructura.Data.Configuraciones;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,7 @@ namespace Infraestructura.Data
         public DbSet<Cita> Citas { get; set; }
         public DbSet<Evolucion> Evoluciones { get; set; }
         public DbSet<HistoriaClinica> HistoriasClinicas { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,7 @@ namespace Infraestructura.Data
             modelBuilder.ApplyConfiguration(new CitaConfiguracion());
             modelBuilder.ApplyConfiguration(new EvolucionConfiguracion());
             modelBuilder.ApplyConfiguration(new HistoriaClinicaConfiguracion());
+            modelBuilder.ApplyConfiguration(new UsuarioConfiguracion());
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Infraestructura.UnitOfWork
         private ICitaRepositorio? _citaRepositorio;
         private IHistoriaClinicaRepositorio? _historiaClinicaRepositorio;
         private IEvolucionRepositorio? _evolucionRepositorio;
+        private IUsuarioRepositorio? _usuarioRepositorio;
 
         public UnitOfWork(ContextoECE contexto)
         {
@@ -36,6 +37,9 @@ namespace Infraestructura.UnitOfWork
 
         public IEvolucionRepositorio Evoluciones =>
             _evolucionRepositorio ??= new EvolucionRepositorio(_contexto);
+
+        public IUsuarioRepositorio Usuarios =>
+            _usuarioRepositorio ??= new UsuarioRepositorio(_contexto);
 
         public async Task<int> GuardarCambiosAsync()
         {

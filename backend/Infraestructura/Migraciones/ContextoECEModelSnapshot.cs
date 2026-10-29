@@ -354,6 +354,74 @@ namespace Infraestructura.Migraciones
                     b.ToTable("Pacientes", (string)null);
                 });
 
+            modelBuilder.Entity("Dominio.Entidades.Usuarios.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ContrasenaHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("Eliminado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("FechaDeCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaDeEliminacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaDeModificacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IdDoctor")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdPaciente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NombreCompleto")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UltimoAcceso")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("IdDoctor")
+                        .IsUnique()
+                        .HasFilter("[IdDoctor] IS NOT NULL");
+
+                    b.HasIndex("IdPaciente")
+                        .IsUnique()
+                        .HasFilter("[IdPaciente] IS NOT NULL");
+
+                    b.ToTable("Usuarios", (string)null);
+                });
+
             modelBuilder.Entity("Dominio.Entidades.Citas.Cita", b =>
                 {
                     b.HasOne("Dominio.Entidades.Doctores.Doctor", "Doctor")
@@ -410,6 +478,23 @@ namespace Infraestructura.Migraciones
                         .HasForeignKey("Dominio.Entidades.HistoriasClinicas.HistoriaClinica", "IdPaciente")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Paciente");
+                });
+
+            modelBuilder.Entity("Dominio.Entidades.Usuarios.Usuario", b =>
+                {
+                    b.HasOne("Dominio.Entidades.Doctores.Doctor", "Doctor")
+                        .WithMany()
+                        .HasForeignKey("IdDoctor")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Dominio.Entidades.Pacientes.Paciente", "Paciente")
+                        .WithMany()
+                        .HasForeignKey("IdPaciente")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Doctor");
 
                     b.Navigation("Paciente");
                 });
