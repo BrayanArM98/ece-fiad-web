@@ -25,19 +25,12 @@ namespace Aplicacion.Features.Citas.Queries.ObtenerCitaPorId
             ObtenerCitaPorIdQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var cita = await _unitOfWork.Citas.ObtenerConRelacionesAsync(request.Id);
-                if (cita == null)
-                    return ResultadoAccion<CitaDTO>.Falla("Cita no encontrada.");
+            var cita = await _unitOfWork.Citas.ObtenerConRelacionesAsync(request.Id);
+            if (cita == null)
+                return ResultadoAccion<CitaDTO>.Falla("Cita no encontrada.");
 
-                var dto = _mapper.Map<CitaDTO>(cita);
-                return ResultadoAccion<CitaDTO>.Exito(dto);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<CitaDTO>.Falla($"Error al obtener cita: {ex.Message}");
-            }
+            var dto = _mapper.Map<CitaDTO>(cita);
+            return ResultadoAccion<CitaDTO>.Exito(dto);
         }
     }
 }

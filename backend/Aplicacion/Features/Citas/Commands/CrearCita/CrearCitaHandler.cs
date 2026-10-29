@@ -35,41 +35,34 @@ namespace Aplicacion.Features.Citas.Commands.CrearCita
         {
             var dto = request.Cita;
 
-            try
+            // 1. Validar datos de entrada
+            var validacion = await _validador.ValidateAsync(dto, cancellationToken);
+            if (!validacion.IsValid)
             {
-                // 1. Validar datos de entrada
-                var validacion = await _validador.ValidateAsync(dto, cancellationToken);
-                if (!validacion.IsValid)
-                {
-                    var errores = string.Join(" | ", validacion.Errors.Select(e => e.ErrorMessage));
-                    return ResultadoAccion<CitaDTO>.Falla($"Datos inválidos: {errores}");
-                }
-
-                // 2. Validar disponibilidad horaria del doctor (regla 21)
-                var ocupado = await _unitOfWork.Citas
-                    .ExisteCitaEnHorarioAsync(dto.IdDoctor, dto.FechaHora, null);
-
-                if (ocupado)
-                {
-                    return ResultadoAccion<CitaDTO>.Falla(
-                        $"El doctor seleccionado ya tiene una cita programada en el horario {dto.FechaHora:dd/MM/yyyy HH:mm}.");
-                }
-
-                // 3. Mapear y persistir
-                var cita = _mapper.Map<Cita>(dto);
-                await _unitOfWork.Citas.AgregarAsync(cita);
-                await _unitOfWork.GuardarCambiosAsync();
-
-                // 4. Recuperar con relaciones para devolver el DTO completo
-                var citaCreada = await _unitOfWork.Citas.ObtenerConRelacionesAsync(cita.Id);
-                var resultado = _mapper.Map<CitaDTO>(citaCreada!);
-
-                return ResultadoAccion<CitaDTO>.Exito(resultado, "Cita creada exitosamente.");
+                return ResultadoAccion<CitaDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
-            catch (Exception ex)
+
+            // 2. Validar disponibilidad horaria del doctor (regla 21)
+            var ocupado = await _unitOfWork.Citas
+                .ExisteCitaEnHorarioAsync(dto.IdDoctor, dto.FechaHora, null);
+
+            if (ocupado)
             {
-                return ResultadoAccion<CitaDTO>.Falla($"Error al crear cita: {ex.Message}");
+                return ResultadoAccion<CitaDTO>.Falla(
+                    $"El doctor seleccionado ya tiene una cita programada en el horario {dto.FechaHora:dd/MM/yyyy HH:mm}.");
             }
+
+            // 3. Mapear y persistir
+            var cita = _mapper.Map<Cita>(dto);
+            await _unitOfWork.Citas.AgregarAsync(cita);
+            await _unitOfWork.GuardarCambiosAsync();
+
+            // 4. Recuperar con relaciones para devolver el DTO completo
+            var citaCreada = await _unitOfWork.Citas.ObtenerConRelacionesAsync(cita.Id);
+            var resultado = _mapper.Map<CitaDTO>(citaCreada!);
+
+            return ResultadoAccion<CitaDTO>.Exito(resultado, "Cita creada exitosamente.");
         }
     }
 }

@@ -34,44 +34,37 @@ namespace Aplicacion.Features.Doctores.Commands.ActualizarDoctor
         {
             var dto = request.Doctor;
 
-            try
+            // 1. Validar datos de entrada
+            var validacion = await _validador.ValidateAsync(dto, cancellationToken);
+            if (!validacion.IsValid)
             {
-                // 1. Validar datos de entrada
-                var validacion = await _validador.ValidateAsync(dto, cancellationToken);
-                if (!validacion.IsValid)
-                {
-                    var errores = string.Join(" | ", validacion.Errors.Select(e => e.ErrorMessage));
-                    return ResultadoAccion<DoctorDTO>.Falla($"Datos inválidos: {errores}");
-                }
-
-                // 2. Verificar que el doctor exista
-                var doctor = await _unitOfWork.Doctores.ObtenerPorIdAsync(dto.Id);
-                if (doctor == null)
-                    return ResultadoAccion<DoctorDTO>.Falla("Doctor no encontrado.");
-
-                // 3. Verificar que el correo no lo use otro doctor
-                var otroConEmail = await _unitOfWork.Doctores.ObtenerPorEmailAsync(dto.Email, dto.Id);
-                if (otroConEmail != null)
-                {
-                    return ResultadoAccion<DoctorDTO>.Falla(
-                        $"Ya existe otro doctor con el correo '{dto.Email}'.");
-                }
-
-                // 4. Aplicar cambios y persistir
-                _mapper.Map(dto, doctor);
-                _unitOfWork.Doctores.Actualizar(doctor);
-                await _unitOfWork.GuardarCambiosAsync();
-
-                // 5. Recuperar con la especialidad cargada
-                var doctorActualizado = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(doctor.Id);
-                var resultado = _mapper.Map<DoctorDTO>(doctorActualizado!);
-
-                return ResultadoAccion<DoctorDTO>.Exito(resultado, "Doctor actualizado exitosamente.");
+                return ResultadoAccion<DoctorDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
-            catch (Exception ex)
+
+            // 2. Verificar que el doctor exista
+            var doctor = await _unitOfWork.Doctores.ObtenerPorIdAsync(dto.Id);
+            if (doctor == null)
+                return ResultadoAccion<DoctorDTO>.Falla("Doctor no encontrado.");
+
+            // 3. Verificar que el correo no lo use otro doctor
+            var otroConEmail = await _unitOfWork.Doctores.ObtenerPorEmailAsync(dto.Email, dto.Id);
+            if (otroConEmail != null)
             {
-                return ResultadoAccion<DoctorDTO>.Falla($"Error al actualizar doctor: {ex.Message}");
+                return ResultadoAccion<DoctorDTO>.Falla(
+                    $"Ya existe otro doctor con el correo '{dto.Email}'.");
             }
+
+            // 4. Aplicar cambios y persistir
+            _mapper.Map(dto, doctor);
+            _unitOfWork.Doctores.Actualizar(doctor);
+            await _unitOfWork.GuardarCambiosAsync();
+
+            // 5. Recuperar con la especialidad cargada
+            var doctorActualizado = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(doctor.Id);
+            var resultado = _mapper.Map<DoctorDTO>(doctorActualizado!);
+
+            return ResultadoAccion<DoctorDTO>.Exito(resultado, "Doctor actualizado exitosamente.");
         }
     }
 }

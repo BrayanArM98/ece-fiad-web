@@ -35,39 +35,32 @@ namespace Aplicacion.Features.Doctores.Commands.CrearDoctor
         {
             var dto = request.Doctor;
 
-            try
+            // 1. Validar datos de entrada
+            var validacion = await _validador.ValidateAsync(dto, cancellationToken);
+            if (!validacion.IsValid)
             {
-                // 1. Validar datos de entrada
-                var validacion = await _validador.ValidateAsync(dto, cancellationToken);
-                if (!validacion.IsValid)
-                {
-                    var errores = string.Join(" | ", validacion.Errors.Select(e => e.ErrorMessage));
-                    return ResultadoAccion<DoctorDTO>.Falla($"Datos inválidos: {errores}");
-                }
-
-                // 2. Verificar que el correo no esté registrado
-                var existente = await _unitOfWork.Doctores.ObtenerPorEmailAsync(dto.Email, null);
-                if (existente != null)
-                {
-                    return ResultadoAccion<DoctorDTO>.Falla(
-                        $"Ya existe un doctor registrado con el correo '{dto.Email}'.");
-                }
-
-                // 3. Mapear y persistir
-                var doctor = _mapper.Map<Doctor>(dto);
-                await _unitOfWork.Doctores.AgregarAsync(doctor);
-                await _unitOfWork.GuardarCambiosAsync();
-
-                // 4. Recuperar con la especialidad cargada para devolver el DTO completo
-                var doctorCreado = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(doctor.Id);
-                var resultado = _mapper.Map<DoctorDTO>(doctorCreado!);
-
-                return ResultadoAccion<DoctorDTO>.Exito(resultado, "Doctor creado exitosamente.");
+                return ResultadoAccion<DoctorDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
-            catch (Exception ex)
+
+            // 2. Verificar que el correo no esté registrado
+            var existente = await _unitOfWork.Doctores.ObtenerPorEmailAsync(dto.Email, null);
+            if (existente != null)
             {
-                return ResultadoAccion<DoctorDTO>.Falla($"Error al crear doctor: {ex.Message}");
+                return ResultadoAccion<DoctorDTO>.Falla(
+                    $"Ya existe un doctor registrado con el correo '{dto.Email}'.");
             }
+
+            // 3. Mapear y persistir
+            var doctor = _mapper.Map<Doctor>(dto);
+            await _unitOfWork.Doctores.AgregarAsync(doctor);
+            await _unitOfWork.GuardarCambiosAsync();
+
+            // 4. Recuperar con la especialidad cargada para devolver el DTO completo
+            var doctorCreado = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(doctor.Id);
+            var resultado = _mapper.Map<DoctorDTO>(doctorCreado!);
+
+            return ResultadoAccion<DoctorDTO>.Exito(resultado, "Doctor creado exitosamente.");
         }
     }
 }

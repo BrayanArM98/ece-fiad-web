@@ -25,17 +25,9 @@ namespace Aplicacion.Features.Citas.Queries.ObtenerTodasCitas
             ObtenerTodasCitasQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var citas = await _unitOfWork.Citas.ObtenerTodasConRelacionesAsync();
-                var lista = _mapper.Map<IEnumerable<CitaDTO>>(citas);
-                return ResultadoAccion<IEnumerable<CitaDTO>>.Exito(lista);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<IEnumerable<CitaDTO>>.Falla(
-                    $"Error al obtener citas: {ex.Message}");
-            }
+            var citas = await _unitOfWork.Citas.ObtenerTodasConRelacionesAsync();
+            var lista = _mapper.Map<IEnumerable<CitaDTO>>(citas);
+            return ResultadoAccion<IEnumerable<CitaDTO>>.Exito(lista);
         }
     }
 }

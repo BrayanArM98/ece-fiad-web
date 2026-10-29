@@ -25,19 +25,12 @@ namespace Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionPorId
             ObtenerEvolucionPorIdQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var evolucion = await _unitOfWork.Evoluciones.ObtenerConRelacionesAsync(request.Id);
-                if (evolucion == null)
-                    return ResultadoAccion<EvolucionDTO>.Falla("Evolución no encontrada.");
+            var evolucion = await _unitOfWork.Evoluciones.ObtenerConRelacionesAsync(request.Id);
+            if (evolucion == null)
+                return ResultadoAccion<EvolucionDTO>.Falla("Evolución no encontrada.");
 
-                var dto = _mapper.Map<EvolucionDTO>(evolucion);
-                return ResultadoAccion<EvolucionDTO>.Exito(dto);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<EvolucionDTO>.Falla($"Error al obtener evolución: {ex.Message}");
-            }
+            var dto = _mapper.Map<EvolucionDTO>(evolucion);
+            return ResultadoAccion<EvolucionDTO>.Exito(dto);
         }
     }
 }

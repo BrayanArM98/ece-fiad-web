@@ -21,22 +21,15 @@ namespace Aplicacion.Features.Citas.Commands.EliminarCita
             EliminarCitaCommand request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var cita = await _unitOfWork.Citas.ObtenerPorIdAsync(request.Id);
-                if (cita == null)
-                    return ResultadoAccion.Falla("Cita no encontrada.");
+            var cita = await _unitOfWork.Citas.ObtenerPorIdAsync(request.Id);
+            if (cita == null)
+                return ResultadoAccion.Falla("Cita no encontrada.");
 
-                // Borrado lógico: la cita queda inactiva con fecha de eliminación
-                _unitOfWork.Citas.Eliminar(cita);
-                await _unitOfWork.GuardarCambiosAsync();
+            // Borrado lógico: la cita queda inactiva con fecha de eliminación
+            _unitOfWork.Citas.Eliminar(cita);
+            await _unitOfWork.GuardarCambiosAsync();
 
-                return ResultadoAccion.Exito("Cita eliminada correctamente.");
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion.Falla($"Error al eliminar cita: {ex.Message}");
-            }
+            return ResultadoAccion.Exito("Cita eliminada correctamente.");
         }
     }
 }

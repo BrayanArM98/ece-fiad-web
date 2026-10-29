@@ -38,9 +38,8 @@ namespace Aplicacion.Features.Pacientes.Commands.ActualizarPaciente
             var validacion = await _validador.ValidateAsync(dto, cancellationToken);
             if (!validacion.IsValid)
             {
-                return ResultadoAccion<PacienteDTO>.Falla(
-                    "Datos inválidos",
-                    validacion.Errors.Select(e => e.ErrorMessage).ToList());
+                return ResultadoAccion<PacienteDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
 
             // 2. Buscar el paciente existente

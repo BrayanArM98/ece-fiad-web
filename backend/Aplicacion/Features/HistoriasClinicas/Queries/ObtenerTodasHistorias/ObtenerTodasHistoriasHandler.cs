@@ -25,17 +25,9 @@ namespace Aplicacion.Features.HistoriasClinicas.Queries.ObtenerTodasHistorias
             ObtenerTodasHistoriasQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var historias = await _unitOfWork.HistoriasClinicas.ObtenerTodasConRelacionesAsync();
-                var lista = _mapper.Map<IEnumerable<HistoriaClinicaDTO>>(historias);
-                return ResultadoAccion<IEnumerable<HistoriaClinicaDTO>>.Exito(lista);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<IEnumerable<HistoriaClinicaDTO>>.Falla(
-                    $"Error al obtener historias clínicas: {ex.Message}");
-            }
+            var historias = await _unitOfWork.HistoriasClinicas.ObtenerTodasConRelacionesAsync();
+            var lista = _mapper.Map<IEnumerable<HistoriaClinicaDTO>>(historias);
+            return ResultadoAccion<IEnumerable<HistoriaClinicaDTO>>.Exito(lista);
         }
     }
 }

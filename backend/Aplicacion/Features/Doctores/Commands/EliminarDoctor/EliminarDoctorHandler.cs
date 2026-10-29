@@ -22,30 +22,23 @@ namespace Aplicacion.Features.Doctores.Commands.EliminarDoctor
             EliminarDoctorCommand request,
             CancellationToken cancellationToken)
         {
-            try
+            // 1. Traer el doctor con sus citas para validar la restricción
+            var doctor = await _unitOfWork.Doctores.ObtenerConCitasAsync(request.Id);
+            if (doctor == null)
+                return ResultadoAccion.Falla("Doctor no encontrado.");
+
+            // 2. Restricción: no eliminar si tiene citas asociadas
+            if (doctor.Citas != null && doctor.Citas.Any())
             {
-                // 1. Traer el doctor con sus citas para validar la restricción
-                var doctor = await _unitOfWork.Doctores.ObtenerConCitasAsync(request.Id);
-                if (doctor == null)
-                    return ResultadoAccion.Falla("Doctor no encontrado.");
-
-                // 2. Restricción: no eliminar si tiene citas asociadas
-                if (doctor.Citas != null && doctor.Citas.Any())
-                {
-                    return ResultadoAccion.Falla(
-                        $"No se puede eliminar el doctor porque tiene {doctor.Citas.Count} cita(s) asociada(s).");
-                }
-
-                // 3. Borrado lógico
-                _unitOfWork.Doctores.Eliminar(doctor);
-                await _unitOfWork.GuardarCambiosAsync();
-
-                return ResultadoAccion.Exito("Doctor eliminado correctamente.");
+                return ResultadoAccion.Falla(
+                    $"No se puede eliminar el doctor porque tiene {doctor.Citas.Count} cita(s) asociada(s).");
             }
-            catch (Exception ex)
-            {
-                return ResultadoAccion.Falla($"Error al eliminar doctor: {ex.Message}");
-            }
+
+            // 3. Borrado lógico
+            _unitOfWork.Doctores.Eliminar(doctor);
+            await _unitOfWork.GuardarCambiosAsync();
+
+            return ResultadoAccion.Exito("Doctor eliminado correctamente.");
         }
     }
 }

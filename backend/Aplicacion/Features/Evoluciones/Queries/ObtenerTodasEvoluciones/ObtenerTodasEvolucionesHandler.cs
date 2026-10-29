@@ -25,17 +25,9 @@ namespace Aplicacion.Features.Evoluciones.Queries.ObtenerTodasEvoluciones
             ObtenerTodasEvolucionesQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var evoluciones = await _unitOfWork.Evoluciones.ObtenerTodasConRelacionesAsync();
-                var lista = _mapper.Map<IEnumerable<EvolucionDTO>>(evoluciones);
-                return ResultadoAccion<IEnumerable<EvolucionDTO>>.Exito(lista);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<IEnumerable<EvolucionDTO>>.Falla(
-                    $"Error al obtener evoluciones: {ex.Message}");
-            }
+            var evoluciones = await _unitOfWork.Evoluciones.ObtenerTodasConRelacionesAsync();
+            var lista = _mapper.Map<IEnumerable<EvolucionDTO>>(evoluciones);
+            return ResultadoAccion<IEnumerable<EvolucionDTO>>.Exito(lista);
         }
     }
 }

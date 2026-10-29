@@ -21,15 +21,8 @@ namespace Aplicacion.Features.Evoluciones.Queries.ContarEvolucionesPorPaciente
             ContarEvolucionesPorPacienteQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var cantidad = await _unitOfWork.Evoluciones.ContarPorPacienteAsync(request.IdPaciente);
-                return ResultadoAccion<int>.Exito(cantidad);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<int>.Falla($"Error al contar evoluciones: {ex.Message}");
-            }
+            var cantidad = await _unitOfWork.Evoluciones.ContarPorPacienteAsync(request.IdPaciente);
+            return ResultadoAccion<int>.Exito(cantidad);
         }
     }
 }

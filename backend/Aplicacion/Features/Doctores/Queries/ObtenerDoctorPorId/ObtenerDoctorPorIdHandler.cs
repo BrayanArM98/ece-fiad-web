@@ -25,19 +25,12 @@ namespace Aplicacion.Features.Doctores.Queries.ObtenerDoctorPorId
             ObtenerDoctorPorIdQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var doctor = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(request.Id);
-                if (doctor == null)
-                    return ResultadoAccion<DoctorDTO>.Falla("Doctor no encontrado.");
+            var doctor = await _unitOfWork.Doctores.ObtenerConEspecialidadAsync(request.Id);
+            if (doctor == null)
+                return ResultadoAccion<DoctorDTO>.Falla("Doctor no encontrado.");
 
-                var dto = _mapper.Map<DoctorDTO>(doctor);
-                return ResultadoAccion<DoctorDTO>.Exito(dto);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<DoctorDTO>.Falla($"Error al obtener doctor: {ex.Message}");
-            }
+            var dto = _mapper.Map<DoctorDTO>(doctor);
+            return ResultadoAccion<DoctorDTO>.Exito(dto);
         }
     }
 }

@@ -38,9 +38,8 @@ namespace Aplicacion.Features.Especialidades.Commands.ActualizarEspecialidad
             var validacion = await _validador.ValidateAsync(dto, cancellationToken);
             if (!validacion.IsValid)
             {
-                return ResultadoAccion<EspecialidadDTO>.Falla(
-                    "Datos inválidos",
-                    validacion.Errors.Select(e => e.ErrorMessage).ToList());
+                return ResultadoAccion<EspecialidadDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
 
             // 2. Buscar la especialidad existente

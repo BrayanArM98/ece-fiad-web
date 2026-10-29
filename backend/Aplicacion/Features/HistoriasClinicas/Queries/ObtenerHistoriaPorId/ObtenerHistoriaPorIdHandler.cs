@@ -25,20 +25,12 @@ namespace Aplicacion.Features.HistoriasClinicas.Queries.ObtenerHistoriaPorId
             ObtenerHistoriaPorIdQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var historia = await _unitOfWork.HistoriasClinicas.ObtenerConRelacionesAsync(request.Id);
-                if (historia == null)
-                    return ResultadoAccion<HistoriaClinicaDTO>.Falla("Historia clínica no encontrada.");
+            var historia = await _unitOfWork.HistoriasClinicas.ObtenerConRelacionesAsync(request.Id);
+            if (historia == null)
+                return ResultadoAccion<HistoriaClinicaDTO>.Falla("Historia clínica no encontrada.");
 
-                var dto = _mapper.Map<HistoriaClinicaDTO>(historia);
-                return ResultadoAccion<HistoriaClinicaDTO>.Exito(dto);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<HistoriaClinicaDTO>.Falla(
-                    $"Error al obtener historia clínica: {ex.Message}");
-            }
+            var dto = _mapper.Map<HistoriaClinicaDTO>(historia);
+            return ResultadoAccion<HistoriaClinicaDTO>.Exito(dto);
         }
     }
 }

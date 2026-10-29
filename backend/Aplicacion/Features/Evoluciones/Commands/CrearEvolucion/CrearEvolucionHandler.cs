@@ -34,31 +34,24 @@ namespace Aplicacion.Features.Evoluciones.Commands.CrearEvolucion
         {
             var dto = request.Evolucion;
 
-            try
+            // 1. Validar datos de entrada
+            var validacion = await _validador.ValidateAsync(dto, cancellationToken);
+            if (!validacion.IsValid)
             {
-                // 1. Validar datos de entrada
-                var validacion = await _validador.ValidateAsync(dto, cancellationToken);
-                if (!validacion.IsValid)
-                {
-                    var errores = string.Join(" | ", validacion.Errors.Select(e => e.ErrorMessage));
-                    return ResultadoAccion<EvolucionDTO>.Falla($"Datos inválidos: {errores}");
-                }
-
-                // 2. Mapear y persistir
-                var evolucion = _mapper.Map<Evolucion>(dto);
-                await _unitOfWork.Evoluciones.AgregarAsync(evolucion);
-                await _unitOfWork.GuardarCambiosAsync();
-
-                // 3. Recuperar con relaciones para devolver el DTO completo
-                var evolucionCreada = await _unitOfWork.Evoluciones.ObtenerConRelacionesAsync(evolucion.Id);
-                var resultado = _mapper.Map<EvolucionDTO>(evolucionCreada!);
-
-                return ResultadoAccion<EvolucionDTO>.Exito(resultado, "Evolución creada exitosamente.");
+                return ResultadoAccion<EvolucionDTO>.FallaValidacion(
+                    validacion.Errors.Select(e => e.ErrorMessage));
             }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<EvolucionDTO>.Falla($"Error al crear evolución: {ex.Message}");
-            }
+
+            // 2. Mapear y persistir
+            var evolucion = _mapper.Map<Evolucion>(dto);
+            await _unitOfWork.Evoluciones.AgregarAsync(evolucion);
+            await _unitOfWork.GuardarCambiosAsync();
+
+            // 3. Recuperar con relaciones para devolver el DTO completo
+            var evolucionCreada = await _unitOfWork.Evoluciones.ObtenerConRelacionesAsync(evolucion.Id);
+            var resultado = _mapper.Map<EvolucionDTO>(evolucionCreada!);
+
+            return ResultadoAccion<EvolucionDTO>.Exito(resultado, "Evolución creada exitosamente.");
         }
     }
 }

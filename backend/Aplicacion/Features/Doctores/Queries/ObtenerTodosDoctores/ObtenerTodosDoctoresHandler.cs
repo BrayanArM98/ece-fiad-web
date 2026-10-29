@@ -25,17 +25,9 @@ namespace Aplicacion.Features.Doctores.Queries.ObtenerTodosDoctores
             ObtenerTodosDoctoresQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var doctores = await _unitOfWork.Doctores.ObtenerTodosConEspecialidadAsync();
-                var lista = _mapper.Map<IEnumerable<DoctorDTO>>(doctores);
-                return ResultadoAccion<IEnumerable<DoctorDTO>>.Exito(lista);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<IEnumerable<DoctorDTO>>.Falla(
-                    $"Error al obtener doctores: {ex.Message}");
-            }
+            var doctores = await _unitOfWork.Doctores.ObtenerTodosConEspecialidadAsync();
+            var lista = _mapper.Map<IEnumerable<DoctorDTO>>(doctores);
+            return ResultadoAccion<IEnumerable<DoctorDTO>>.Exito(lista);
         }
     }
 }

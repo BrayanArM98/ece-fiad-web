@@ -25,19 +25,11 @@ namespace Aplicacion.Features.Evoluciones.Queries.ObtenerEvolucionesPorHistoria
             ObtenerEvolucionesPorHistoriaQuery request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var evoluciones = await _unitOfWork.Evoluciones
-                    .ObtenerPorHistoriaClinicaAsync(request.IdHistoriaClinica);
+            var evoluciones = await _unitOfWork.Evoluciones
+                .ObtenerPorHistoriaClinicaAsync(request.IdHistoriaClinica);
 
-                var lista = _mapper.Map<IEnumerable<EvolucionDTO>>(evoluciones);
-                return ResultadoAccion<IEnumerable<EvolucionDTO>>.Exito(lista);
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion<IEnumerable<EvolucionDTO>>.Falla(
-                    $"Error al obtener evoluciones de la historia clínica: {ex.Message}");
-            }
+            var lista = _mapper.Map<IEnumerable<EvolucionDTO>>(evoluciones);
+            return ResultadoAccion<IEnumerable<EvolucionDTO>>.Exito(lista);
         }
     }
 }

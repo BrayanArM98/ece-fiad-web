@@ -21,25 +21,18 @@ namespace Aplicacion.Features.Evoluciones.Commands.EliminarEvolucion
             EliminarEvolucionCommand request,
             CancellationToken cancellationToken)
         {
-            try
-            {
-                var evolucion = await _unitOfWork.Evoluciones.ObtenerPorIdAsync(request.Id);
-                if (evolucion == null)
-                    return ResultadoAccion.Falla("La evolución no existe o ya fue eliminada.");
+            var evolucion = await _unitOfWork.Evoluciones.ObtenerPorIdAsync(request.Id);
+            if (evolucion == null)
+                return ResultadoAccion.Falla("La evolución no existe o ya fue eliminada.");
 
-                // Borrado lógico
-                evolucion.Eliminado = true;
-                evolucion.FechaDeEliminacion = DateTime.UtcNow;
+            // Borrado lógico
+            evolucion.Eliminado = true;
+            evolucion.FechaDeEliminacion = DateTime.UtcNow;
 
-                _unitOfWork.Evoluciones.Actualizar(evolucion);
-                await _unitOfWork.GuardarCambiosAsync();
+            _unitOfWork.Evoluciones.Actualizar(evolucion);
+            await _unitOfWork.GuardarCambiosAsync();
 
-                return ResultadoAccion.Exito("Evolución eliminada exitosamente.");
-            }
-            catch (Exception ex)
-            {
-                return ResultadoAccion.Falla($"Error al eliminar evolución: {ex.Message}");
-            }
+            return ResultadoAccion.Exito("Evolución eliminada exitosamente.");
         }
     }
 }
