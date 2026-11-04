@@ -2,17 +2,11 @@ import { Check, ChevronsUpDown, Search } from 'lucide-react'
 import { useId, useState, type KeyboardEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { normalizar } from '@/lib/catalogos'
 import type { Paciente } from '@/lib/tipos'
 import { cn } from '@/lib/utils'
 
 const MAXIMO_RESULTADOS = 50
-
-/** Sin acentos ni mayúsculas, para buscar "garcia" y encontrar "García". */
-const normalizar = (texto: string) =>
-  texto
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase()
 
 export const nombrePaciente = (p: Paciente) => `${p.nombres} ${p.apellidos}`
 

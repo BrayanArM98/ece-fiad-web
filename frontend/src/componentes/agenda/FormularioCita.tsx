@@ -1,35 +1,27 @@
 import { format, isSameDay, isToday } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { CalendarDays, CircleAlert } from 'lucide-react'
-import { useId, useState, type FormEvent, type ReactNode } from 'react'
+import { CalendarDays } from 'lucide-react'
+import { useId, useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { ErrorApi } from '@/lib/api'
 import { aFecha, aFechaApi, aFechaHoraApi, formatearFechaLarga, formatearHora } from '@/lib/formato'
 import type { Cita, DatosCita } from '@/lib/tipos'
-import { cn } from '@/lib/utils'
 import { useAgendarCita, useCitas, useDoctores, useEditarCita, usePacientesActivos } from './consultas'
 import { HORARIOS, hoy, textoHora, minutosDelDia, unirFechaHora } from './fechas'
 import { SelectorPaciente } from './SelectorPaciente'
+import { AvisoError, Campo, PieFormulario } from '@/componentes/Formulario'
 
 export interface ValoresIniciales {
   fecha?: Date
   horario?: string
   idDoctor?: number
+  idPaciente?: number
 }
 
 /**
@@ -85,7 +77,7 @@ function CuerpoFormulario({
   const fechaOriginal = cita ? aFecha(cita.fechaHora) : null
   const horarioOriginal = cita ? textoHora(minutosDelDia(cita.fechaHora)) : null
 
-  const [idPaciente, setIdPaciente] = useState<number | null>(cita?.idPaciente ?? null)
+  const [idPaciente, setIdPaciente] = useState<number | null>(cita?.idPaciente ?? iniciales?.idPaciente ?? null)
   const [idDoctor, setIdDoctor] = useState<number | null>(cita?.idDoctor ?? iniciales?.idDoctor ?? null)
   const [fecha, setFecha] = useState<Date | undefined>(
     fechaOriginal
@@ -197,7 +189,7 @@ function CuerpoFormulario({
       </DialogHeader>
 
       <div className="grid gap-5 p-6">
-        {errorApi ? <AvisoError error={errorApi} /> : null}
+        {errorApi ? <AvisoError error={errorApi} titulo="Revisa los datos de la cita:" /> : null}
 
         {pacientes.isError || doctores.isError ? (
           <AvisoError error={pacientes.error ?? doctores.error} />
@@ -328,64 +320,11 @@ function CuerpoFormulario({
         </Campo>
       </div>
 
-      <DialogFooter className="m-0 rounded-b-xl border-t border-linea bg-papel p-4 px-6">
-        <Button type="button" variant="outline" onClick={alCerrar} disabled={enviando}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={enviando}>
-          {enviando ? 'Guardando…' : editando ? 'Guardar cambios' : 'Agendar cita'}
-        </Button>
-      </DialogFooter>
+      <PieFormulario
+        enviando={enviando}
+        textoEnviar={editando ? 'Guardar cambios' : 'Agendar cita'}
+        alCancelar={alCerrar}
+      />
     </form>
-  )
-}
-
-function Campo({
-  etiqueta,
-  htmlFor,
-  error,
-  opcional,
-  children,
-}: {
-  etiqueta: string
-  htmlFor: string
-  error?: string
-  opcional?: boolean
-  children: ReactNode
-}) {
-  return (
-    <div className="grid content-start gap-1.5">
-      <Label htmlFor={htmlFor} className="font-medium text-tinta">
-        {etiqueta}
-        {opcional ? <span className="font-normal text-pizarra">(opcional)</span> : null}
-      </Label>
-      {children}
-      {error ? (
-        <p id={`${htmlFor}-error`} className={cn('text-xs text-coral')}>
-          {error}
-        </p>
-      ) : null}
-    </div>
-  )
-}
-
-function AvisoError({ error }: { error: unknown }) {
-  const lista = error instanceof ErrorApi && error.errores.length > 0 ? error.errores : null
-  const mensaje =
-    error instanceof ErrorApi ? (lista ? 'Revisa los datos de la cita:' : error.message) : 'Ocurrió un error inesperado.'
-  return (
-    <div role="alert" className="flex gap-2 rounded-md border border-coral/30 bg-coral-suave px-3 py-2.5 text-coral">
-      <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-      <div className="grid gap-1">
-        <p className="font-medium">{mensaje}</p>
-        {lista ? (
-          <ul className="list-disc pl-4">
-            {lista.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-    </div>
   )
 }
