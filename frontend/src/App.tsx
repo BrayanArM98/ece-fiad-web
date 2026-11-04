@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ErrorApi } from '@/lib/api'
 import ErrorRuta from '@/paginas/ErrorRuta'
+import PaginaAgenda from '@/paginas/Agenda'
 import PaginaInicio from '@/paginas/Inicio'
 import PaginaLogin from '@/paginas/Login'
 import PaginaNoEncontrada from '@/paginas/NoEncontrada'
@@ -39,6 +40,14 @@ const enrutador = createBrowserRouter([
             element: (
               <SoloRoles roles={PERSONAL}>
                 <PaginaInicio />
+              </SoloRoles>
+            ),
+          },
+          {
+            path: 'agenda',
+            element: (
+              <SoloRoles roles={PERSONAL}>
+                <PaginaAgenda />
               </SoloRoles>
             ),
           },

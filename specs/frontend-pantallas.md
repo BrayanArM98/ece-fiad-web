@@ -73,7 +73,7 @@ Correo, contraseña y "Entrar". El botón se deshabilita mientras faltan datos o
 - [x] Sesión, inicio de sesión y rutas protegidas por rol.
 - [x] Estructura con barra lateral.
 - [x] Inicio.
-- [ ] Agenda.
+- [x] Agenda.
 - [ ] Pacientes y expediente.
 - [ ] Doctores y especialidades.
 - [ ] Reportes.

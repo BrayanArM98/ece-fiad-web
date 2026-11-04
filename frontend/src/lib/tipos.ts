@@ -68,3 +68,53 @@ export interface ResumenGeneral {
   periodoAnterior: Periodo
   indicadores: Indicador[]
 }
+
+// ===== Catálogos =====
+
+export interface Doctor {
+  id: number
+  nombres: string
+  apellidos: string
+  nombreCompleto: string
+  telefono: string
+  email: string
+  horarioAtencion: string
+  idEspecialidad: number
+  nombreEspecialidad: string
+  activo: boolean
+  cantidadCitas: number
+}
+
+export type TipoDocumento = string
+export type Genero = string
+export type GrupoSanguineo = string
+
+export interface Paciente {
+  id: number
+  nombres: string
+  apellidos: string
+  numeroDocumento: string
+  tipoDocumento: TipoDocumento
+  telefono: string | null
+  email: string
+  fechaNacimiento: string
+  genero: Genero
+  grupoSanguineo: GrupoSanguineo
+  direccion: string | null
+  activo: boolean
+}
+
+// ===== Citas: datos que se envían =====
+
+export interface DatosCita {
+  idPaciente: number
+  idDoctor: number
+  /** Fecha y hora local sin zona, por ejemplo "2026-11-04T09:30:00" */
+  fechaHora: string
+  motivo: string
+  notas: string
+  estado: EstadoCita
+}
+
+/** Resultado que se registra con PATCH /api/Citas/{id}/estado. */
+export type ResultadoCita = Extract<EstadoCita, 'Confirmada' | 'Completada' | 'NoAsistio'>
