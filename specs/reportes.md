@@ -120,6 +120,6 @@ GET /api/Reportes/{resumen|citas|productividad|pacientes|diagnosticos}/exportar?
 - [x] Queries y handlers de los cinco reportes.
 - [x] Exportación a PDF y Excel (`IExportadorReportes`, `ExportarReporteQuery`).
 - [x] `ReportesController` con permisos por rol.
-- [ ] Pantalla de Reportes en el frontend web.
+- [x] Pantalla de Reportes en el frontend web.
 - [ ] Reportes del médico en la app móvil.
 - [ ] Validar los criterios de aceptación.
