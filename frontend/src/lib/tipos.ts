@@ -69,6 +69,58 @@ export interface ResumenGeneral {
   indicadores: Indicador[]
 }
 
+export interface PuntoSerieCitas {
+  fecha: string
+  total: number
+  completadas: number
+  noAsistio: number
+  canceladas: number
+  porAtender: number
+}
+
+export interface ReporteCitas {
+  periodo: Periodo
+  total: number
+  agrupacion: 'dia' | 'semana'
+  porEstado: Conteo[]
+  serie: PuntoSerieCitas[]
+  porDoctor: Conteo[]
+  porEspecialidad: Conteo[]
+}
+
+export interface ProductividadDoctor {
+  idDoctor: number
+  nombreDoctor: string
+  especialidad: string
+  citasTotales: number
+  completadas: number
+  noAsistio: number
+  canceladas: number
+  porAtender: number
+  evoluciones: number
+  tasaAsistencia: number | null
+}
+
+export interface ReporteProductividad {
+  periodo: Periodo
+  doctores: ProductividadDoctor[]
+}
+
+export interface ReportePacientes {
+  periodo: Periodo
+  pacientesActivos: number
+  nuevosEnPeriodo: number
+  porGenero: Conteo[]
+  porRangoEdad: Conteo[]
+  porGrupoSanguineo: Conteo[]
+}
+
+export interface ReporteDiagnosticos {
+  periodo: Periodo
+  totalEvoluciones: number
+  diagnosticos: Conteo[]
+}
+
 // ===== Catálogos =====
 
 export interface Doctor {
@@ -85,9 +137,17 @@ export interface Doctor {
   cantidadCitas: number
 }
 
-export type TipoDocumento = string
-export type Genero = string
-export type GrupoSanguineo = string
+export type TipoDocumento = 'Cedula' | 'Pasaporte' | 'Otro'
+export type Genero = 'Masculino' | 'Femenino' | 'Otro' | 'PrefieroNoDecir'
+export type GrupoSanguineo =
+  | 'APositivo'
+  | 'ANegativo'
+  | 'BPositivo'
+  | 'BNegativo'
+  | 'ABPositivo'
+  | 'ABNegativo'
+  | 'OPositivo'
+  | 'ONegativo'
 
 export interface Paciente {
   id: number
@@ -102,6 +162,52 @@ export interface Paciente {
   grupoSanguineo: GrupoSanguineo
   direccion: string | null
   activo: boolean
+}
+
+export interface Especialidad {
+  id: number
+  nombre: string
+  descripcion: string | null
+  activo: boolean
+  cantidadDoctores: number
+}
+
+// ===== Expediente =====
+
+export interface HistoriaClinica {
+  id: number
+  idPaciente: number
+  nombrePaciente: string
+  fechaApertura: string
+  alergias: string
+  antecedentesFamiliares: string
+  antecedentesPersonales: string
+  activo: boolean
+  fechaDeCreacion: string
+  fechaDeModificacion: string | null
+}
+
+export interface Evolucion {
+  id: number
+  idHistoriaClinica: number
+  idDoctor: number
+  nombrePaciente: string
+  nombreDoctor: string
+  nombreEspecialidad: string
+  fecha: string
+  diagnostico: string
+  tratamiento: string
+  notas: string
+  activo: boolean
+  fechaDeCreacion: string
+  fechaDeModificacion: string | null
+}
+
+export interface HistorialPaciente {
+  tieneHistoria: boolean
+  historia: HistoriaClinica | null
+  evoluciones: Evolucion[]
+  totalEvoluciones: number
 }
 
 // ===== Citas: datos que se envían =====

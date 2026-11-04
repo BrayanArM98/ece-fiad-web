@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { EncabezadoPagina } from '@/componentes/EncabezadoPagina'
 import { ErrorVista, Vacio } from '@/componentes/EstadosVista'
+import { EsqueletoIndicadores, RejillaIndicadores } from '@/componentes/Indicadores'
 import { InsigniaEstado } from '@/componentes/InsigniaEstado'
 import { Skeleton } from '@/components/ui/skeleton'
 import { pedir } from '@/lib/api'
 import { ESTADOS_CITA } from '@/lib/estados'
-import { aFechaApi, formatearCifra, formatearFechaLarga, formatearHora, mayuscula, nombreMes } from '@/lib/formato'
-import type { Cita, Indicador, ResumenGeneral } from '@/lib/tipos'
+import { aFechaApi, formatearFechaLarga, formatearHora, mayuscula, nombreMes } from '@/lib/formato'
+import type { Cita, ResumenGeneral } from '@/lib/tipos'
 import { cn } from '@/lib/utils'
 import { useSesion } from '@/sesion/SesionContext'
 
@@ -33,16 +33,6 @@ export default function PaginaInicio() {
 // Indicadores del mes
 // ============================================
 
-/** Si subir es bueno (verde) o malo (coral) para cada indicador. */
-const SUBIR_ES_BUENO: Record<string, boolean> = {
-  citas: true,
-  asistencia: true,
-  cancelaciones: false,
-  pacientesAtendidos: true,
-  evoluciones: true,
-  pacientesNuevos: true,
-}
-
 function FranjaIndicadores() {
   const consulta = useQuery({
     queryKey: ['reportes', 'resumen', 'mes-actual'],
@@ -61,63 +51,13 @@ function FranjaIndicadores() {
       </div>
 
       {consulta.isPending ? (
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-linea bg-linea sm:grid-cols-3 xl:grid-cols-6">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="grid gap-3 bg-card p-5">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
-              <Skeleton className="h-4 w-28" />
-            </div>
-          ))}
-        </div>
+        <EsqueletoIndicadores />
       ) : consulta.isError ? (
         <ErrorVista error={consulta.error} alReintentar={() => consulta.refetch()} />
       ) : (
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-linea bg-linea sm:grid-cols-3 xl:grid-cols-6">
-          {consulta.data.indicadores.map((indicador) => (
-            <CeldaIndicador key={indicador.clave} indicador={indicador} />
-          ))}
-        </dl>
+        <RejillaIndicadores indicadores={consulta.data.indicadores} comparadoCon="el mes anterior" />
       )}
     </section>
-  )
-}
-
-function CeldaIndicador({ indicador }: { indicador: Indicador }) {
-  const { variacion, valorAnterior, formato } = indicador
-  const subio = (variacion ?? 0) > 0
-  const bajo = (variacion ?? 0) < 0
-  const esBueno = SUBIR_ES_BUENO[indicador.clave] ? subio : bajo
-  const esMalo = SUBIR_ES_BUENO[indicador.clave] ? bajo : subio
-  const Flecha = subio ? ArrowUpRight : ArrowDownRight
-
-  const cambio =
-    variacion === null
-      ? valorAnterior === null
-        ? 'Sin datos del mes anterior'
-        : `El mes anterior fue ${formatearCifra(valorAnterior, formato)}`
-      : variacion === 0
-        ? 'Igual que el mes anterior'
-        : `${formatearCifra(Math.abs(variacion))}${formato === 'porcentaje' ? ' pts' : '%'} ${subio ? 'más' : 'menos'}`
-
-  return (
-    <div className="grid content-start gap-1 bg-card p-5">
-      <dt className="text-pizarra">{indicador.titulo}</dt>
-      <dd className="font-heading text-[2rem] leading-tight font-semibold text-tinta">
-        {formatearCifra(indicador.valor, formato)}
-      </dd>
-      <dd
-        className={cn(
-          'flex items-center gap-1 text-xs',
-          esBueno && 'text-estado-completada',
-          esMalo && 'text-coral',
-          !esBueno && !esMalo && 'text-pizarra',
-        )}
-      >
-        {variacion ? <Flecha className="size-3.5" aria-hidden="true" /> : null}
-        {cambio}
-      </dd>
-    </div>
   )
 }
 
