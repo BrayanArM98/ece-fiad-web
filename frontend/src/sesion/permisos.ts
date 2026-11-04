@@ -1,4 +1,4 @@
-import { CalendarDays, House, type LucideIcon } from 'lucide-react'
+import { CalendarDays, ChartColumn, House, Stethoscope, UserCog, Users, type LucideIcon } from 'lucide-react'
 import type { Rol } from '@/lib/tipos'
 
 /**
@@ -17,6 +17,10 @@ export const PERSONAL: Rol[] = ['Administrador', 'Recepcionista', 'Medico']
 export const PANTALLAS: Pantalla[] = [
   { ruta: '/', titulo: 'Inicio', icono: House, roles: PERSONAL },
   { ruta: '/agenda', titulo: 'Agenda', icono: CalendarDays, roles: PERSONAL },
+  { ruta: '/pacientes', titulo: 'Pacientes', icono: Users, roles: PERSONAL },
+  { ruta: '/doctores', titulo: 'Doctores', icono: Stethoscope, roles: PERSONAL },
+  { ruta: '/reportes', titulo: 'Reportes', icono: ChartColumn, roles: PERSONAL },
+  { ruta: '/usuarios', titulo: 'Usuarios', icono: UserCog, roles: ['Administrador'] },
 ]
 
 export const TEXTO_ROL: Record<Rol, string> = {

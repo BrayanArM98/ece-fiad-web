@@ -1,15 +1,22 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter } from 'react-router'
 import { RouterProvider } from 'react-router/dom'
 import { Estructura } from '@/componentes/Estructura'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ErrorApi } from '@/lib/api'
+import type { Rol } from '@/lib/tipos'
 import ErrorRuta from '@/paginas/ErrorRuta'
 import PaginaAgenda from '@/paginas/Agenda'
+import PaginaDoctores from '@/paginas/Doctores'
+import PaginaExpediente from '@/paginas/Expediente'
 import PaginaInicio from '@/paginas/Inicio'
 import PaginaLogin from '@/paginas/Login'
 import PaginaNoEncontrada from '@/paginas/NoEncontrada'
+import PaginaPacientes from '@/paginas/Pacientes'
+import PaginaUsuarios from '@/paginas/Usuarios'
 import { PERSONAL } from '@/sesion/permisos'
 import { RutaProtegida, SoloRoles } from '@/sesion/Rutas'
 import { SesionProvider } from '@/sesion/SesionContext'
@@ -26,6 +33,11 @@ const clienteConsultas = new QueryClient({
   },
 })
 
+// Reportes carga aparte porque incluye la librería de gráficas
+const PaginaReportes = lazy(() => import('@/paginas/Reportes'))
+
+const conRoles = (roles: Rol[], pagina: ReactNode) => <SoloRoles roles={roles}>{pagina}</SoloRoles>
+
 const enrutador = createBrowserRouter([
   { path: '/login', element: <PaginaLogin />, errorElement: <ErrorRuta /> },
   {
@@ -35,22 +47,21 @@ const enrutador = createBrowserRouter([
       {
         element: <Estructura />,
         children: [
+          { index: true, element: conRoles(PERSONAL, <PaginaInicio />) },
+          { path: 'agenda', element: conRoles(PERSONAL, <PaginaAgenda />) },
+          { path: 'pacientes', element: conRoles(PERSONAL, <PaginaPacientes />) },
+          { path: 'pacientes/:id', element: conRoles(PERSONAL, <PaginaExpediente />) },
+          { path: 'doctores', element: conRoles(PERSONAL, <PaginaDoctores />) },
           {
-            index: true,
-            element: (
-              <SoloRoles roles={PERSONAL}>
-                <PaginaInicio />
-              </SoloRoles>
+            path: 'reportes',
+            element: conRoles(
+              PERSONAL,
+              <Suspense fallback={<Skeleton className="h-96" />}>
+                <PaginaReportes />
+              </Suspense>,
             ),
           },
-          {
-            path: 'agenda',
-            element: (
-              <SoloRoles roles={PERSONAL}>
-                <PaginaAgenda />
-              </SoloRoles>
-            ),
-          },
+          { path: 'usuarios', element: conRoles(['Administrador'], <PaginaUsuarios />) },
         ],
       },
     ],

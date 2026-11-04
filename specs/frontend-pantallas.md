@@ -74,8 +74,8 @@ Correo, contraseña y "Entrar". El botón se deshabilita mientras faltan datos o
 - [x] Estructura con barra lateral.
 - [x] Inicio.
 - [x] Agenda.
-- [ ] Pacientes y expediente.
-- [ ] Doctores y especialidades.
-- [ ] Reportes.
-- [ ] Usuarios.
+- [x] Pacientes y expediente.
+- [x] Doctores y especialidades.
+- [x] Reportes.
+- [x] Usuarios.
 - [ ] Despliegue en Vercel apuntando a la API publicada.

@@ -47,6 +47,7 @@ Escala (rem): 0.75, 0.875, 1, 1.125, 1.375, 1.75 y 2.25. Cuerpo en 0.875 rem (14
 
 - Radio de 6 px en controles (botones, campos) y de 10 px en paneles. Las insignias de estado son píldoras.
 - Espaciado en múltiplos de 4 px.
+- Controles (botones, campos y selectores) de 36 px de alto, para que se alineen entre sí y sean fáciles de tocar.
 - Contenido alineado a la izquierda, con un ancho máximo de 1280 px.
 - Foco de teclado visible con un anillo de 2 px en color marea.
 - Se respeta `prefers-reduced-motion`; las únicas animaciones son las que responden a una acción (abrir un diálogo, desplegar un menú).
