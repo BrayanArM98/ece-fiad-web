@@ -9,6 +9,7 @@ ECE-FIAD Web se desarrolla con **Spec-Driven Development**: cada módulo nuevo s
 | [`reportes.md`](reportes.md) | Módulo de Reportes: indicadores, gráficas y exportación a PDF y Excel | Implementada (API y web) |
 | [`frontend-diseno.md`](frontend-diseno.md) | Sistema de diseño del frontend: principios, paleta, tipografía y estructura | Implementada |
 | [`frontend-pantallas.md`](frontend-pantallas.md) | Rutas, pantallas por rol y reglas de navegación del frontend | Implementada |
+| [`despliegue.md`](despliegue.md) | Publicación en Vercel y Azure: variables, base de datos y GitHub Actions | En desarrollo |
 
 Estados: Especificada → En desarrollo → Implementada → Validada. Una spec pasa a **Validada** cuando todos sus criterios de aceptación están marcados.
 
