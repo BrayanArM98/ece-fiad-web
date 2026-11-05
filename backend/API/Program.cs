@@ -20,9 +20,16 @@ var builder = WebApplication.CreateBuilder(args);
 // SERVICIOS
 // ============================================
 
-// Registrar DbContext con SQL Server
+// Registrar DbContext con SQL Server.
+// En Azure SQL la base gratuita se pausa sola y tarda unos segundos en despertar, y puede haber
+// cortes breves de red: EF reintenta la operación en lugar de fallar al primer intento.
 builder.Services.AddDbContext<ContextoECE>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionBD")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("ConexionBD"),
+        sql => sql.EnableRetryOnFailure(
+            maxRetryCount: 6,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null)));
 
 // Registrar UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, Infraestructura.UnitOfWork.UnitOfWork>();
