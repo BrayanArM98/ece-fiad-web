@@ -9,14 +9,9 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ErrorApi } from '@/lib/api'
 import type { Rol } from '@/lib/tipos'
 import ErrorRuta from '@/paginas/ErrorRuta'
-import PaginaAgenda from '@/paginas/Agenda'
-import PaginaDoctores from '@/paginas/Doctores'
-import PaginaExpediente from '@/paginas/Expediente'
 import PaginaInicio from '@/paginas/Inicio'
 import PaginaLogin from '@/paginas/Login'
 import PaginaNoEncontrada from '@/paginas/NoEncontrada'
-import PaginaPacientes from '@/paginas/Pacientes'
-import PaginaUsuarios from '@/paginas/Usuarios'
 import { PERSONAL } from '@/sesion/permisos'
 import { RutaProtegida, SoloRoles } from '@/sesion/Rutas'
 import { SesionProvider } from '@/sesion/SesionContext'
@@ -33,10 +28,28 @@ const clienteConsultas = new QueryClient({
   },
 })
 
-// Reportes carga aparte porque incluye la librería de gráficas
+// Cada pantalla se descarga la primera vez que se abre; así el inicio de sesión carga rápido
+const PaginaAgenda = lazy(() => import('@/paginas/Agenda'))
+const PaginaPacientes = lazy(() => import('@/paginas/Pacientes'))
+const PaginaExpediente = lazy(() => import('@/paginas/Expediente'))
+const PaginaDoctores = lazy(() => import('@/paginas/Doctores'))
 const PaginaReportes = lazy(() => import('@/paginas/Reportes'))
+const PaginaUsuarios = lazy(() => import('@/paginas/Usuarios'))
 
-const conRoles = (roles: Rol[], pagina: ReactNode) => <SoloRoles roles={roles}>{pagina}</SoloRoles>
+const conRoles = (roles: Rol[], pagina: ReactNode) => (
+  <SoloRoles roles={roles}>
+    <Suspense fallback={<CargandoPantalla />}>{pagina}</Suspense>
+  </SoloRoles>
+)
+
+function CargandoPantalla() {
+  return (
+    <div className="grid gap-6" aria-busy="true" aria-label="Cargando">
+      <Skeleton className="h-9 w-56" />
+      <Skeleton className="h-80" />
+    </div>
+  )
+}
 
 const enrutador = createBrowserRouter([
   { path: '/login', element: <PaginaLogin />, errorElement: <ErrorRuta /> },
@@ -52,15 +65,7 @@ const enrutador = createBrowserRouter([
           { path: 'pacientes', element: conRoles(PERSONAL, <PaginaPacientes />) },
           { path: 'pacientes/:id', element: conRoles(PERSONAL, <PaginaExpediente />) },
           { path: 'doctores', element: conRoles(PERSONAL, <PaginaDoctores />) },
-          {
-            path: 'reportes',
-            element: conRoles(
-              PERSONAL,
-              <Suspense fallback={<Skeleton className="h-96" />}>
-                <PaginaReportes />
-              </Suspense>,
-            ),
-          },
+          { path: 'reportes', element: conRoles(PERSONAL, <PaginaReportes />) },
           { path: 'usuarios', element: conRoles(['Administrador'], <PaginaUsuarios />) },
         ],
       },
