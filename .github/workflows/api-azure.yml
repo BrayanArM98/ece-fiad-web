@@ -1,0 +1,44 @@
+# Publica la API en Azure App Service cada vez que cambia algo en backend/ y se sube a main.
+# También se puede lanzar a mano desde la pestaña Actions ("Run workflow").
+# Pasos para configurarla: specs/despliegue.md
+name: API a Azure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/api-azure.yml'
+  workflow_dispatch:
+
+env:
+  # Nombre del App Service en Azure (el que va antes de .azurewebsites.net)
+  AZURE_WEBAPP_NAME: ece-fiad-api
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  publicar:
+    name: Compilar y publicar
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v5
+
+      - name: Instalar .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Compilar la solución
+        run: dotnet build backend/ECE-FIAD.slnx --configuration Release
+
+      - name: Publicar la API
+        run: dotnet publish backend/API/Presentacion.csproj --configuration Release --output publicar --no-build
+
+      - name: Subir a Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: publicar
