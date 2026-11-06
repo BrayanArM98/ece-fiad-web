@@ -1,6 +1,6 @@
 # Despliegue
 
-**Estado:** En desarrollo
+**Estado:** Implementada
 
 ECE-FIAD Web se publica en dos partes:
 
@@ -11,6 +11,18 @@ ECE-FIAD Web se publica en dos partes:
 | Base de datos | Azure SQL Database (oferta gratuita) | La API aplica las migraciones al arrancar |
 
 La app móvil usa la misma API publicada.
+
+**Publicación actual**
+
+| Recurso | Valor |
+|---------|-------|
+| Frontend | https://ece-fiad-web.vercel.app |
+| API | https://ece-fiad-api-cpcce9f2d0hffmeq.brazilsouth-01.azurewebsites.net (documentación en `/swagger`) |
+| Grupo de recursos | `rg-ece-fiad`, región Brazil South |
+| Base de datos | `ece-fiad` en el servidor `ece-fiad-sql-brayan` (oferta gratuita, pausa al llegar al límite) |
+| App Service | `ece-fiad-api` en el plan `plan-ece-fiad` (F1, Linux, .NET 10) |
+
+Azure for Students solo permite crear recursos en algunas regiones; East US, West US 2 y West US 3 fueron rechazadas por la política de la suscripción, Brazil South sí está permitida.
 
 ## 1. Requisitos
 
@@ -103,23 +115,23 @@ En `ece-fiad-movil`, `EXPO_PUBLIC_API_URL` debe apuntar a la misma URL de la API
 
 ## Criterios de aceptación
 
-- [ ] `GET /salud` en la URL de Azure responde 200 con `{"estado":"en línea"}`.
+- [x] `GET /salud` en la URL de Azure responde 200 con `{"estado":"en línea"}`.
 - [ ] El frontend publicado en Vercel inicia sesión con admin@ecefiad.mx y carga Inicio sin errores de CORS.
 - [ ] Recargar el navegador en `/agenda` o en un expediente muestra la misma pantalla, no un 404 de Vercel.
 - [ ] Un origen que no está en `Cors__OrigenesPermitidos` no puede llamar a la API desde el navegador.
 - [ ] Las citas creadas desde el frontend publicado aparecen con la misma hora en la agenda (zona horaria `TZ`).
 - [ ] Los reportes se descargan en PDF y Excel desde el frontend publicado.
-- [ ] Un cambio en `backend/` subido a `main` se publica solo mediante GitHub Actions.
-- [ ] `appsettings.Development.json` y las claves de producción no están en el repositorio.
+- [x] Un cambio en `backend/` subido a `main` se publica solo mediante GitHub Actions.
+- [x] `appsettings.Development.json` y las claves de producción no están en el repositorio.
 
 ## Tareas
 
 - [x] Reintentos de conexión a SQL para la base gratuita de Azure (`Program.cs`).
 - [x] Flujo de GitHub Actions para publicar la API (`.github/workflows/api-azure.yml`).
 - [x] Carga diferida de las pantallas del frontend para reducir el tamaño inicial.
-- [ ] Crear la base de datos en Azure SQL.
-- [ ] Crear el App Service y configurar sus variables.
-- [ ] Configurar el secreto del perfil de publicación y publicar la API.
-- [ ] Configurar `VITE_API_URL` en Vercel y volver a desplegar.
+- [x] Crear la base de datos en Azure SQL.
+- [x] Crear el App Service y configurar sus variables.
+- [x] Configurar el secreto del perfil de publicación y publicar la API.
+- [x] Configurar `VITE_API_URL` en Vercel y volver a desplegar.
 - [ ] Apuntar la app móvil a la API publicada.
 - [ ] Validar los criterios de aceptación.
