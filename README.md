@@ -37,6 +37,7 @@
 - [Ejecutar en local](#ejecutar-en-local)
 - [Despliegue](#despliegue)
 - [Especificaciones](#especificaciones)
+- [Bitácora de IA y decisiones](#bitácora-de-ia-y-decisiones)
 - [Autor](#autor)
 
 ## Capturas
@@ -173,6 +174,11 @@ Los pasos completos están en [`specs/despliegue.md`](specs/despliegue.md). El p
 ## Especificaciones
 
 El proyecto se desarrolla con **Spec-Driven Development**: cada módulo tiene su especificación antes del código. Están en [`specs/`](specs/README.md): pantallas, diseño, reportes y despliegue.
+
+## Bitácora de IA y decisiones
+
+- [Bitácora de IA](docs/bitacora-ia.md): qué le pedí a la IA, qué acepté, qué rechacé y en qué se equivocó.
+- [Diario de decisiones](docs/diario-decisiones.md): decisiones de arquitectura y diseño con sus alternativas.
 
 ## Autor
 
