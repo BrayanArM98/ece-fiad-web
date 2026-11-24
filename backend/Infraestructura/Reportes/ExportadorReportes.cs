@@ -138,6 +138,11 @@ namespace Infraestructura.Reportes
                         }
                     });
 
+                    // Porcentajes en el PDF: columna "Porcentaje" con signo % y, en tablas con "Total",
+                    // cada cantidad muestra su porcentaje respecto al total de la fila
+                    var indicePorcentaje = tabla.Columnas.IndexOf("Porcentaje");
+                    var indiceTotal = tabla.Columnas.IndexOf("Total");
+
                     for (var r = 0; r < tabla.Filas.Count; r++)
                     {
                         var fondo = r % 2 == 0 ? ColorBlanco : ColorFilaAlterna;
@@ -149,7 +154,14 @@ namespace Infraestructura.Reportes
                             var celda = t.Cell().Background(fondo).BorderBottom(0.5f).BorderColor(ColorBorde)
                                 .PaddingVertical(3).PaddingHorizontal(5);
 
-                            (EsNumero(valor) ? celda.AlignRight() : celda).Text(FormatearCelda(valor)).FontSize(9);
+                            var texto = FormatearCelda(valor);
+                            if (i == indicePorcentaje && EsNumero(valor))
+                                texto += "%";
+                            else if (indiceTotal >= 0 && i > indiceTotal && indiceTotal < valores.Length
+                                     && valor is int parte && valores[indiceTotal] is int total && total > 0)
+                                texto = $"{parte} ({parte * 100m / total:0.#}%)";
+
+                            (EsNumero(valor) ? celda.AlignRight() : celda).Text(texto).FontSize(9);
                         }
                     }
                 });
